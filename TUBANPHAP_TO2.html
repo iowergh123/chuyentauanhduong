@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#102C46">
+<title>Tư Bản Pháp – Chuyến Tàu Ánh Dương | UI Redesign</title>
+<style>
+:root{--navy:#173B57;--teal:#167C80;--sun:#F4B942;--coral:#E56B5D;--cream:#FFF8EA;--sky:#DFF2FF;--ink:#16364e;--muted:#5c7487;--line:#dbe8ef;--panel:#ffffff;--good:#1a9d6a;box-sizing:border-box;color-scheme:light}
+*{box-sizing:border-box}
+html{scroll-padding-top:20px}
+body{margin:0;min-height:100vh;font-family:Arial,"Segoe UI",Tahoma,sans-serif;color:var(--navy);background:linear-gradient(160deg,var(--sky),var(--cream) 70%);background-color:var(--cream)}
+button,input{font:inherit}
+button{cursor:pointer;border:2px solid var(--teal);background:#fff;color:var(--navy);padding:11px 16px;border-radius:14px;font-weight:800;transition:transform .12s,background .18s,color .18s,box-shadow .18s}
+button:hover:not(:disabled){background:var(--teal);color:#fff;box-shadow:0 5px 16px rgba(22,124,128,.18)}
+button:active:not(:disabled){transform:translateY(1px)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.pri{background:var(--teal);color:#fff;font-size:18px;padding:13px 24px}
+button.warn{border-color:var(--coral)}
+button.ghost{background:transparent}
+#app{max-width:1220px;margin:0 auto;padding:14px}
+.hidden{display:none!important}
+.card{background:rgba(255,255,255,.96);border:1px solid #dfe9f0;border-radius:24px;box-shadow:0 10px 28px rgba(23,59,87,.10);padding:24px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:.25em 0;line-height:1.25}
+h1{font-size:clamp(30px,4vw,48px)}
+h2{font-size:clamp(22px,2.6vw,30px)}
+h3{font-size:20px}
+p{line-height:1.55}
+.small{font-size:13px;color:var(--muted)}
+.center{text-align:center}
+#top{display:none;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--navy);color:#fff;border-radius:18px;padding:11px 14px}
+body.g #top,body.g #route,body.g #status{display:flex}body.g #layout{display:flex}
+.top-main{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.top-pill{font-weight:800}
+.mute-btn{padding:9px 13px;font-size:14px;min-width:108px}
+#route{display:none;position:relative;margin:15px 8px 24px;height:78px;align-items:flex-start}
+.route-line{position:absolute;left:1%;right:1%;top:40px;height:8px;border-radius:999px;background:#cfe0ea}
+.route-fill{position:absolute;left:1%;top:40px;height:8px;border-radius:999px;background:linear-gradient(90deg,var(--sun),#eab25a);transition:width .65s}
+.stop{position:absolute;top:30px;width:24px;height:24px;border-radius:50%;transform:translateX(-50%);background:#fff;border:3px solid #c9dbe5;display:grid;place-items:center;font-size:10px;font-weight:900}
+.stop.on{border-color:var(--teal);background:var(--sun)}
+.stop span{position:absolute;top:28px;left:50%;transform:translateX(-50%);font-size:11px;white-space:nowrap;font-weight:700}.stop.first span{left:0;transform:none;text-align:left}.stop.last span{left:auto;right:0;transform:none;text-align:right}
+.train{position:absolute;top:5px;width:48px;height:30px;transform:translateX(-50%);transition:left .65s}
+.train .body{fill:var(--navy)}.train .cab{fill:var(--teal)}.train .wheel{fill:var(--sun)}
+#layout{display:block;gap:18px;align-items:start}
+#main{flex:1;min-width:0}
+#board{width:315px;display:none;flex-direction:column;gap:10px;position:sticky;top:18px;align-self:flex-start}
+body.g #board{display:flex}
+body:not(.g) #board{display:none}
+.scoreboard-head{background:linear-gradient(135deg,#173b57,#205f72);color:#fff;border-radius:20px;padding:15px 16px;box-shadow:0 10px 24px rgba(23,59,87,.18);border:1px solid rgba(255,255,255,.18)}
+.scoreboard-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:900;letter-spacing:.5px}
+.scoreboard-live{font-size:10px;padding:4px 7px;border-radius:999px;background:#dff6e9;color:#176343;letter-spacing:.8px}
+.scoreboard-sub{font-size:11px;opacity:.78;margin-top:5px}.scoreboard-head:before{content:"BẢNG ĐIỂM TRỰC TIẾP";display:block;font-size:9px;letter-spacing:1.5px;opacity:.65;margin-bottom:4px}
+.team-card{position:relative;background:#fff;border-radius:18px;border:2px solid var(--line);border-left:10px solid var(--c);padding:13px 15px;box-shadow:0 4px 12px rgba(23,59,87,.07);transition:transform .2s,box-shadow .2s,border-color .2s}
+.team-card.active{transform:translateX(-3px);}
+.score-line{display:flex;align-items:flex-end;gap:8px;margin:7px 0 5px}
+.score-label{font-size:10px;color:#718493;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.score-rankline{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.score-progress{height:5px;background:#edf2f4;border-radius:999px;overflow:hidden;margin:7px 0 8px}
+.score-progress>i{display:block;height:100%;width:0;border-radius:999px;background:var(--c);transition:width .45s ease}
+.team-card.active{box-shadow:0 0 0 3px var(--c),0 7px 18px rgba(23,59,87,.10)}
+.rank-badge{position:absolute;right:12px;top:10px;font-size:12px;font-weight:900;background:#eef5f8;border-radius:999px;padding:5px 8px}
+.team-name{font-weight:900;font-size:15px}
+.score{font-size:35px;font-weight:900;line-height:1;margin:8px 0;position:relative}
+.score-float{position:absolute;left:78px;top:0;font-size:20px;color:var(--teal);animation:floatUp 1.15s forwards;white-space:nowrap}
+.score-float.bad{color:var(--coral)}
+.team-meta{font-size:12px;color:#516b7d;line-height:1.55}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.5px;padding:3px 7px;border-radius:8px;background:#eff6f8;margin-right:4px}
+.status-chip{display:inline-block;margin-top:5px;margin-right:4px;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:800;background:#fff3d6;color:#705500}
+.status-chip.bad{background:#ffe5e0;color:#8b3126}
+.status-chip.good{background:#e0f5ea;color:#175f44}
+@keyframes floatUp{to{transform:translateY(-17px);opacity:0}}
+.question-card{position:relative;overflow:hidden}
+.question-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.who{display:inline-flex;align-items:center;gap:8px;color:#fff;border-radius:12px;padding:7px 12px;font-weight:900}
+.stage-kicker{font-size:12px;font-weight:900;letter-spacing:1px;color:var(--teal)}
+.question{font-size:clamp(22px,2.2vw,30px);line-height:1.35;margin:15px 0 18px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.option{min-height:86px;text-align:left;display:flex;align-items:flex-start;gap:12px;font-size:20px;line-height:1.35;padding:15px}
+.option .letter{flex:0 0 34px;display:grid;place-items:center;background:var(--navy);color:#fff;border-radius:10px;padding:4px;font-weight:900}
+.option.locked{text-decoration:line-through;background:#f4f5f5;color:#81909a;border-color:#c7d2d7}
+.option.correct{background:#dff4e9;border-color:var(--good)}
+.option.wrong{background:#ffe6e0;border-color:var(--coral);animation:shake .38s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.note{background:#fff4d8;border-left:5px solid var(--sun);border-radius:12px;padding:10px 12px;margin:10px 0}
+.result{margin-top:15px;padding:14px;border-radius:16px;font-size:18px;font-weight:900}
+.result.good{background:#e1f6eb;color:#185f47}.result.bad{background:#ffe5e0;color:#81352b}
+.event-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.hand{margin-top:18px}
+.hand-card{border:1px dashed var(--teal);border-radius:14px;padding:10px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#fcffff}
+.hand-card .evt-name{font-weight:900}
+.hand-card .evt-desc{font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px}
+.hand-card .evt-hint{font-size:11px;color:var(--coral);font-weight:800}
+.section-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px}
+.stage-wrap{position:relative;min-height:310px;display:grid;place-items:center;overflow:hidden}
+.stage-art{position:absolute;inset:auto 0 0 0;height:180px;pointer-events:none;opacity:.95}
+.stage-art .sun{position:absolute;right:9%;top:15px;width:76px;height:76px;border-radius:50%;background:#ffe09a;box-shadow:0 0 50px rgba(244,185,66,.45)}
+.art-ground{position:absolute;left:-5%;right:-5%;bottom:-25px;height:120px;background:#dbeff3;border-radius:50% 50% 0 0/30% 30% 0 0}
+.stage-art .scene{position:absolute;left:7%;right:7%;bottom:25px;height:90px}
+.scene span{position:absolute;display:block}
+.stage-1 .scene .field{left:0;right:0;bottom:0;height:45px;background:#bfe2b5;border-radius:45% 45% 0 0}
+.stage-1 .scene .market{left:22%;bottom:25px;width:90px;height:38px;background:#f2c27d;border-radius:8px 8px 2px 2px}
+.stage-1 .scene .market:before{content:"";position:absolute;left:-8px;right:-8px;top:-16px;height:18px;background:#e56b5d;clip-path:polygon(0 100%,50% 0,100% 100%)}
+.stage-2 .scene .factory{left:18%;bottom:20px;width:145px;height:54px;background:#d9dfe4;border-radius:8px}
+.stage-2 .scene .chimney{left:54%;bottom:72px;width:18px;height:50px;background:#b7c1c8}
+.stage-2 .scene .track{left:0;right:0;bottom:6px;height:10px;border-top:3px solid #8a9aa4;border-bottom:3px solid #8a9aa4;background:repeating-linear-gradient(90deg,transparent 0 18px,#8a9aa4 18px 22px)}
+.stage-3 .scene .bank{left:28%;bottom:22px;width:150px;height:55px;background:#f7f3ea;border:4px solid #d7c6a4;border-radius:7px}
+.stage-3 .scene .bank:before{content:"₤";position:absolute;inset:0;display:grid;place-items:center;font-size:34px;color:#b9903e;font-weight:900}
+.stage-3 .scene .net{left:0;right:0;bottom:10px;height:80px;background:radial-gradient(circle at 20% 50%,#167c80 0 4px,transparent 5px),radial-gradient(circle at 50% 20%,#3b82f6 0 4px,transparent 5px),radial-gradient(circle at 78% 60%,#e56b5d 0 4px,transparent 5px);opacity:.55}
+.stage-4 .scene .map{left:20%;bottom:12px;width:190px;height:80px;background:#e8e1c8;border:3px solid #cdbf9d;border-radius:40% 55% 45% 35%;transform:rotate(-6deg)}
+.stage-4 .scene .city{right:12%;bottom:18px;width:85px;height:70px;background:repeating-linear-gradient(90deg,#c2ced4 0 16px,#e8eff2 16px 20px);clip-path:polygon(0 100%,0 42%,12% 42%,12% 18%,27% 18%,27% 52%,43% 52%,43% 8%,58% 8%,58% 33%,73% 33%,73% 0,88% 0,88% 100%)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(23,59,87,.58);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal-backdrop.on{display:flex}
+.modal{background:var(--cream);border-radius:24px;padding:20px;max-width:600px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.20)}
+.modal-actions{display:grid;gap:8px;margin-top:13px}
+.event-card{border:4px solid var(--teal);border-radius:20px;background:#fff;padding:18px;animation:flip .75s}
+.event-card.R{border-color:var(--sun)}.event-card.L{border-color:var(--coral);box-shadow:0 0 22px rgba(244,185,66,.45)}
+.event-card .rarity{font-size:12px;letter-spacing:1px;font-weight:900}
+@keyframes flip{from{transform:rotateY(90deg);opacity:0}to{transform:rotateY(0);opacity:1}}
+#status{display:none;min-height:28px;align-items:center;justify-content:center;text-align:center;margin-top:12px;font-weight:900;color:var(--teal)}
+.bottom-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.setup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.setup-team{border-top:6px solid var(--c);padding-top:8px}
+input[type=text]{width:100%;padding:11px 12px;border:2px solid #cfe3ef;border-radius:12px;background:#fff}
+.check{display:block;margin:7px 0;font-size:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;border-bottom:1px solid var(--line);text-align:center}th{background:#f3f8fa;position:sticky;top:0}
+.final-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.final-stat{background:#f7fafb;border-radius:16px;padding:12px;text-align:center}
+.final-stat b{display:block;font-size:24px;margin-top:4px}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+.confetti i{position:absolute;top:-14px;width:8px;height:12px;animation:fall 3.1s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.hero-route{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px 0}
+.hero-stop{background:#f4fafb;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;font-size:12px;font-weight:800}
+.resume-box{margin-top:14px;padding:13px;background:#eef7f8;border-radius:14px}
+@media(max-width:920px){#layout{flex-direction:column}#board{width:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.setup-grid{grid-template-columns:1fr}.options{grid-template-columns:1fr}.final-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){#app{padding:9px;max-width:100%;overflow-x:hidden}.card{padding:18px}#board{display:flex;overflow-x:auto;flex-direction:row}.team-card{min-width:235px}.option{min-height:72px;font-size:18px}.hero-route{grid-template-columns:1fr 1fr}.final-grid{grid-template-columns:1fr}#route{overflow:hidden;margin-left:0;margin-right:0;padding:0 2px}.stop span{white-space:normal;width:78px;text-align:center;font-size:9px;line-height:1.05}.train{width:42px}.top-main{min-width:0;gap:8px}.top-main span{overflow-wrap:anywhere}.final-grid + div{max-width:100%;overflow-x:auto}.final-grid + div table{min-width:620px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== 2026 UI REDESIGN: SUNLIGHT RAILWAY / HISTORICAL BOARD ===== */
+:root{
+  --navy:#102c46; --navy-2:#193f5c; --teal:#147f82; --teal-2:#1b9a96;
+  --sun:#e7a62f; --gold:#c88920; --coral:#d85d50; --cream:#f7f0df;
+  --paper:#fffdf7; --paper-2:#f4ead4; --sky:#dcecf0; --ink:#17354d; --muted:#65798a;
+  --line:#d7d5c8; --good:#17845f; --shadow:0 18px 45px rgba(16,44,70,.13);
+}
+html{background:#102c46}
+body{
+  min-height:100vh;color:var(--ink);
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 12% 4%,rgba(231,166,47,.18),transparent 27%),
+    radial-gradient(circle at 92% 18%,rgba(20,127,130,.16),transparent 30%),
+    linear-gradient(135deg,#dcecf0 0%,#f7f0df 54%,#efe4cb 100%);
+}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(16,44,70,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(16,44,70,.035) 1px,transparent 1px);background-size:24px 24px;z-index:-1}
+#app{max-width:1320px;padding:18px 18px 32px}
+.card{
+  background:linear-gradient(180deg,rgba(255,253,247,.98),rgba(255,250,239,.96));
+  border:1px solid rgba(16,44,70,.12);border-radius:28px;box-shadow:var(--shadow);padding:28px;
+  position:relative;overflow:hidden;
+}
+.card:after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--teal),var(--sun),var(--coral));opacity:.9}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;color:var(--navy);letter-spacing:-.02em}
+h1{font-size:clamp(34px,5vw,60px);font-weight:900}
+h2{font-size:clamp(24px,3vw,34px)}
+button{border:1px solid rgba(16,44,70,.16);background:var(--paper);color:var(--navy);border-radius:14px;padding:11px 16px;font-weight:850;box-shadow:0 3px 0 rgba(16,44,70,.06);transition:.18s ease}
+button:hover:not(:disabled){background:var(--navy);color:#fff;transform:translateY(-2px);box-shadow:0 9px 22px rgba(16,44,70,.18)}
+button.pri{background:linear-gradient(135deg,var(--teal),#0e666a);border-color:#0e666a;color:#fff;padding:14px 25px;border-radius:16px;box-shadow:0 8px 20px rgba(20,127,130,.25)}
+button.warn{border-color:rgba(216,93,80,.5);color:#9d3d33;background:#fff5f2}
+button.ghost{border-color:rgba(16,44,70,.18);background:rgba(255,255,255,.5)}
+#top{
+  background:linear-gradient(100deg,#0d2941,#174664 65%,#126e72);border:1px solid rgba(255,255,255,.13);
+  border-radius:20px;padding:12px 15px;box-shadow:0 12px 28px rgba(16,44,70,.18);position:relative;overflow:hidden
+}
+#top:before{content:"🚂";font-size:30px;opacity:.13;position:absolute;right:150px;top:-4px;transform:rotate(-5deg)}
+.top-main{gap:9px}.top-main>span{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.08);padding:7px 10px;border-radius:10px;font-size:13px}
+.top-main .top-pill{background:var(--sun);color:#35260d;border:0;box-shadow:0 3px 0 rgba(0,0,0,.1)}
+.mute-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22);color:#fff}
+#route{height:96px;margin:14px 12px 25px}
+.route-line{top:48px;height:10px;background:#c6d4d7;border:2px solid rgba(16,44,70,.08)}
+.route-fill{top:48px;height:10px;background:linear-gradient(90deg,var(--gold),var(--sun),#e6c16a);box-shadow:0 2px 8px rgba(231,166,47,.3)}
+.stop{top:37px;width:28px;height:28px;border:3px solid #afc3c8;background:var(--paper);box-shadow:0 3px 8px rgba(16,44,70,.12);font-size:10px}
+.stop.on{border-color:var(--teal);background:var(--sun);color:#17354d;box-shadow:0 0 0 5px rgba(231,166,47,.14)}
+.stop span{top:34px;color:var(--navy);font-size:11px;letter-spacing:.02em}
+.train{top:4px;filter:drop-shadow(0 5px 4px rgba(16,44,70,.18))}
+.train .body{fill:#193f5c}.train .cab{fill:#147f82}.train .wheel{fill:#d58f22}
+#layout{display:block;gap:20px}
+#main{min-width:0;padding-right:355px}
+#board{width:325px;gap:12px;position:fixed;right:18px;top:112px;z-index:20;max-height:calc(100vh - 130px);overflow:auto;padding:2px 3px 12px 2px}
+#board::-webkit-scrollbar{width:6px}
+#board::-webkit-scrollbar-thumb{background:#b7c9ce;border-radius:99px}
+@media(max-width:1100px) and (min-width:921px){#main{padding-right:340px}#board{right:10px;width:305px}}
+.team-card{
+  background:rgba(255,253,247,.94);border:1px solid rgba(16,44,70,.12);border-left:8px solid var(--c);border-radius:19px;
+  padding:15px 16px;box-shadow:0 7px 20px rgba(16,44,70,.08);transition:.18s ease
+}
+.team-card.active{transform:translateY(-2px);box-shadow:0 0 0 2px var(--c),0 12px 28px rgba(16,44,70,.13)}
+.rank-badge{background:#eef3f2;color:var(--navy);border:1px solid #d7e1df}
+.score{font-family:Georgia,"Times New Roman",serif;font-size:40px;color:var(--navy)}
+.team-meta{color:#64798a}.status-chip{border:1px solid rgba(16,44,70,.06)}
+.question-card{padding:30px;min-height:480px}
+.question-card:before{content:"CÂU HỎI • CHUYẾN TÀU ÁNH DƯƠNG";display:block;font-size:10px;font-weight:900;letter-spacing:2px;color:#8c6a28;margin-bottom:12px}
+.question-head{padding-bottom:14px;border-bottom:1px dashed #d7d0bf}
+.who{border-radius:999px;padding:8px 13px;box-shadow:0 4px 10px rgba(16,44,70,.1)}
+.stage-kicker{color:#9b7122;letter-spacing:1.7px}
+.question{font-family:Georgia,"Times New Roman",serif;font-size:clamp(25px,2.6vw,36px);font-weight:700;line-height:1.3;color:#17354d;margin:24px 0}
+.options{gap:14px}
+.option{min-height:94px;border:1px solid #d8d8cc;background:rgba(255,255,255,.82);border-radius:18px;padding:17px;font-size:18px;box-shadow:0 4px 12px rgba(16,44,70,.05);position:relative;overflow:hidden}
+.option:after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(20,127,130,.05),transparent 50%);pointer-events:none}
+.option:hover:not(:disabled){border-color:var(--teal);background:#fff;transform:translateY(-2px);box-shadow:0 9px 22px rgba(16,44,70,.1)}
+.option .letter{background:var(--navy);border-radius:10px;box-shadow:0 3px 0 #081b2a}
+.option.correct{background:#e4f5ed;border-color:#74bda4}.option.wrong{background:#fff0ec;border-color:#dc8b7f}
+.hand{border-top:1px solid #ded8ca;padding-top:4px}.hand-card{border:1px solid #d9d2c1;background:#fffaf0;border-radius:16px;padding:12px}
+.hand-card .evt-name{font-family:Georgia,"Times New Roman",serif;font-size:16px}.hand-card button{padding:8px 11px;font-size:13px}
+.note{background:#fff6dc;border:1px solid #ead59c;border-left:5px solid var(--sun);box-shadow:0 3px 10px rgba(16,44,70,.04)}
+.result{border:1px solid rgba(16,44,70,.08);box-shadow:0 5px 14px rgba(16,44,70,.05)}
+.event-card{border:1px solid rgba(16,44,70,.14);border-top:7px solid var(--teal);border-radius:24px;background:linear-gradient(145deg,#fffdf8,#f7eedc);padding:24px;box-shadow:var(--shadow)}
+.event-card.R{border-top-color:var(--sun)}.event-card.L{border-top-color:var(--coral);box-shadow:0 0 0 1px rgba(216,93,80,.15),var(--shadow)}
+.event-card .rarity{color:#876322;letter-spacing:1.5px}
+.modal-backdrop{background:rgba(8,27,42,.72);backdrop-filter:blur(5px)}
+.modal{background:linear-gradient(180deg,#fffdf7,#f7efdf);border:1px solid rgba(255,255,255,.4);border-radius:26px;padding:23px;box-shadow:0 25px 80px rgba(0,0,0,.32)}
+.modal-actions button{border-radius:15px}
+.stage-wrap{min-height:420px;background:linear-gradient(180deg,#fffdf7,#f4ead6)}
+.stage-art{height:215px;opacity:1}.stage-art .sun{background:#ffd67a;box-shadow:0 0 70px rgba(231,166,47,.45)}
+.art-ground{background:#d2e4df}.stage-1 .scene .field{background:#b7d7ad}.stage-2 .scene .factory{background:#cfd8dc}.stage-3 .scene .bank{background:#fbf7ec}.stage-4 .scene .map{background:#e7dfc5}
+.setup-grid{gap:16px}.setup-team{background:rgba(255,255,255,.55);border:1px solid #ddd8ca;border-top:6px solid var(--c);border-radius:16px;padding:14px}
+input[type=text]{border:1px solid #cdd8da;border-radius:13px;background:#fffdf8;outline:none}input[type=text]:focus{border-color:var(--teal);box-shadow:0 0 0 4px rgba(20,127,130,.1)}
+.hero-route{gap:10px}.hero-stop{background:linear-gradient(180deg,#f8fbfa,#eee8d8);border:1px solid #d8d5c9;border-radius:15px;box-shadow:0 4px 12px rgba(16,44,70,.05);position:relative}.hero-stop:before{content:"✦";display:block;color:var(--sun);font-size:15px;margin-bottom:4px}
+.resume-box{background:#edf6f4;border:1px solid #c9dfda}
+.final-stat{background:linear-gradient(180deg,#f8faf8,#f0e9d9);border:1px solid #ddd8ca}.final-stat b{font-family:Georgia,"Times New Roman",serif;color:var(--navy);font-size:30px}
+table{border-radius:14px;overflow:hidden}th{background:#17354d;color:#fff}td{background:rgba(255,253,247,.8)}
+#status{color:#176f70;font-size:13px}
+@media(max-width:920px){#layout{display:flex;flex-direction:column}#main{padding-right:0;order:2}#board{order:1;position:relative;top:auto;right:auto;width:100%;max-height:none;overflow:visible;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:10px 0 16px;gap:8px}.scoreboard-head{grid-column:1/-1}.team-card{min-width:0}.team-card.active{transform:none}}
+@media(max-width:620px){#app{padding:8px}.card{padding:19px;border-radius:22px}.question-card{padding:20px;min-height:0}.question{font-size:24px}.option{min-height:76px;font-size:17px;padding:14px}.top-main>span{font-size:11px;padding:6px 8px}#route{height:82px;margin-bottom:18px}.stop{top:34px}.route-line,.route-fill{top:44px}.stop span{top:31px}.stage-wrap{min-height:390px}.hero-route{grid-template-columns:1fr 1fr}#board{grid-template-columns:1fr 1fr}.scoreboard-head{grid-column:1/-1}.team-card{padding:11px 12px}.score{font-size:29px}.team-meta{font-size:10px}.status-chip{font-size:10px}}
+
+/* ===== 3-ATTEMPT QUESTION FLOW ===== */
+.attempt-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px 0 4px;padding:10px 12px;border:1px solid #d9d2c1;border-radius:14px;background:#fbf6e8}
+.attempt-title{font-weight:900;color:var(--navy)}
+.attempt-sub{font-size:12px;color:var(--muted)}
+.attempt-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.attempt-chip{font-size:11px;font-weight:900;padding:5px 8px;border-radius:999px;background:#eef3f2;border:1px solid #d6e0de;color:var(--navy)}
+.attempt-chip.wrong{background:#fff0ec;border-color:#e2aaa1;color:#8b3a30}
+.attempt-chip.correct{background:#e5f5ee;border-color:#a9d8c4;color:#176247}
+.attempt-chip.skipped{background:#f1f2f2;border-color:#d4d9db;color:#65747d}
+.handoff{margin-top:12px;padding:11px 13px;border-radius:14px;background:#eef7f8;border:1px solid #c9dfda;color:#176f70;font-weight:800}
+
+
+#board{box-sizing:border-box;}
+@media(min-width:921px){
+  #board{
+    display:flex !important;
+    position:fixed !important;
+    right:18px !important;
+    top:112px !important;
+    width:325px !important;
+    max-height:calc(100vh - 130px) !important;
+    overflow-y:auto !important;
+  }
+  #main{padding-right:355px !important;}
+}
+@media(max-width:920px){
+  #board{display:grid !important;position:relative !important;right:auto !important;top:auto !important;width:100% !important;max-height:none !important;overflow:visible !important;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top"></div>
+  <div id="route"></div>
+  <div id="layout"><main id="main"></main><aside id="board"></aside></div>
+  <div id="status" aria-live="polite"></div>
+</div>
+<div id="modalRoot" class="modal-backdrop" aria-modal="true"></div>
+<div id="confetti" class="confetti"></div>
+<script>
+"use strict";
+
+const APP_KEY="tu-ban-phap-chuyen-tau-anh-duong-v2";
+const $=q=>document.querySelector(q);
+const LETTERS="ABCD";
+const TEAM_COLORS=["#3B82F6","#F59E0B","#E25555"];
+const DEFAULT_NAMES=["Đội Lam","Đội Hổ Phách","Đội Đỏ"];
+const STAGES=["MẦM MỐNG","BỨT PHÁ","MẠNG LƯỚI","NHỮNG MÂU THUẪN"];
+const STAGE_DESC=["Bối cảnh lịch sử và khung pháp lý.","Công nghiệp và những giới hạn.","Tổ chức độc quyền, tư bản tài chính, cho vay.","Thuộc địa, giai cấp, sau 1945 và hiện đại."];
+const EVENT_GROUPS=["Quyền lợi","Tấn công","Biến động lượt","Phòng thủ","Đặc biệt"];
+const RARITY_NAME={C:"COMMON",R:"RARE",L:"LEGENDARY"};
+const NEGATIVE_LABEL={lock:"Khóa 1 đáp án",c50:"Phong Tỏa: chỉ +50",cut:"Cắt Tuyến: bonus tối đa +50",noroll:"Khóa Đường Ray: không nhận Event",noatk:"Độc Quyền: không dùng Attack",swap:"Nhiễu Đường Ray",inter:"Cú Chặn"};
+const DEFENSE_IDS=new Set([29,30,31,32,33,34]);
+const TURN_ORDER_IDS=new Set([21,22,23,26,27,28]);
+const ATTACK_IDS=new Set([11,12,13,14,15,16,17,18,19,20,24]);
+
+const QS0=[
+["Trong nền kinh tế Pháp trước Cách mạng, ngành nào chiếm ưu thế và khoảng bao nhiêu % dân số là nông dân?","Nông nghiệp phong kiến; 80%","Công nghiệp nặng; 60%","Dịch vụ tài chính; 50%","Thương mại thuộc địa; 40%"],
+["Chính sách trọng thương thời Colbert tập trung vào những hoạt động nào?","Sản xuất xa xỉ phẩm và thương mại thuộc địa","Quốc hữu hóa ngành trọng yếu và lập kế hoạch kinh tế","Công nghệ cao và hàng không vũ trụ","Khai thác khoáng sản và lập đồn điền"],
+["Cách mạng Pháp 1789 được tư liệu gắn với thay đổi nào?","Lật đổ phong kiến, giải phóng đất đai và thống nhất thị trường nội địa","Mở rộng hệ thống phúc lợi xã hội","Đưa Pháp lên thứ 4 thế giới về công nghiệp","Hội nhập sâu vào EU"],
+["Đạo luật Le Chapelier (1791) cấm điều gì?","Bãi công và lập nghiệp đoàn","Sở hữu tư nhân","Thương mại thuộc địa","Ngân hàng quốc gia"],
+["Bộ luật Dân sự Napoléon (1804) bảo hộ điều gì theo tư liệu?","Quyền sở hữu tư nhân","Quyền lập nghiệp đoàn","Độc quyền thuế thuốc phiện","Kế hoạch hóa kinh tế"],
+["Bộ luật Dân sự Napoléon (1804) kết hợp với Ngân hàng Quốc gia Pháp (1800) tạo cơ sở định hình lĩnh vực nào?","Tư bản công nghiệp và tài chính","Nông nghiệp phong kiến và giáo dục","Thuộc địa và phúc lợi","Thương mại EU và hàng không"],
+["Từ khoảng 1830, Cách mạng công nghiệp ở Pháp bùng nổ mạnh ở những ngành nào?","Dệt, luyện kim và đường sắt","Nông nghiệp, giáo dục và dịch vụ","Thuốc phiện, muối và rượu","Hàng không vũ trụ, EU và xa xỉ phẩm"],
+["Trước năm 1870, nền kinh tế Pháp từng giữ vị trí nào trên thế giới?","Thứ 2, sau Anh","Thứ 1, trước Anh","Thứ 4, sau Nga","Thứ 10, sau Anh"],
+["Vì sao quá trình tập trung lao động ở Pháp diễn ra chậm?","Do duy trì nhiều hộ nông dân nhỏ lẻ","Do không có ngân hàng","Do không có đường sắt","Do không có thương mại thuộc địa"],
+["Cuối thế kỷ XIX, công nghiệp Pháp suy giảm xuống vị trí nào trong tư liệu?","Thứ 4 thế giới","Thứ 2 thế giới","Thứ 1 thế giới","Thứ 3 thế giới"],
+["Nhóm yếu tố nào được tư liệu nêu liên quan đến sự suy giảm công nghiệp cuối thế kỷ XIX?","Chiến tranh Pháp - Phổ, kỹ thuật chậm đổi mới và thị trường nội địa hạn chế","Cấm ngân hàng, hủy đường sắt và mất thuộc địa","Khủng hoảng phúc lợi sau 1945","Hội nhập EU và công nghệ cao"],
+["Nền kinh tế tiểu nông được tư liệu gắn với vấn đề nào?","Hạn chế thị trường nội địa","Tăng mạnh công nghiệp nặng","Tăng tốc hàng không vũ trụ","Hình thành tư bản tài chính"],
+["Sự tích tụ tư bản hình thành tổ chức độc quyền nào, liên kết với ngân hàng tạo thành tư bản tài chính?","Xanh-đi-ca","Nghiệp đoàn","Đồn điền","Liên bang Đông Dương"],
+["Đặc trưng nổi bật được V.I. Lenin đúc kết về chủ nghĩa đế quốc Pháp là gì?","“Chủ nghĩa đế quốc cho vay lãi”","“Chủ nghĩa đế quốc đường sắt”","“Chủ nghĩa đế quốc phúc lợi”","“Chủ nghĩa đế quốc nông nghiệp”"],
+["Tư bản Pháp xuất khẩu dưới hình thức cho các khu vực nào vay trong tư liệu?","Nga, Đông Âu, Thổ Nhĩ Kỳ và Latinh","Anh, EU và Thái Bình Dương","Algeria, Pháp và Việt Nam","Hoa Kỳ, Nhật Bản và EU"],
+["Đến năm 1914, khoảng bao nhiêu tổng tư bản xuất khẩu của Pháp là tiền cho vay?","Khoảng 2/3","Khoảng 1/2","Khoảng 1/3","Gần như toàn bộ"],
+["Theo tư liệu, tư bản Pháp ít chú trọng điều gì trong nước?","Đầu tư hiện đại hóa công nghiệp nặng","Thương mại thuộc địa","Cho vay lấy lãi","Liên kết với ngân hàng"],
+["Việc xuất khẩu tư bản cho vay khiến Pháp được mô tả là quốc gia sống bằng gì?","Lợi tức quốc tế","Nông nghiệp phong kiến","Thuế giáo dục","Công nghiệp nặng trong nước"],
+["Pháp mở rộng đế chế tới những không gian nào được nêu trong tài liệu?","Algeria, Tây/Bắc Phi, Thái Bình Dương và Liên bang Đông Dương","Chỉ Đông Dương và EU","Chỉ châu Âu và Nga","Chỉ Thổ Nhĩ Kỳ và Latinh"],
+["Hệ thống thuộc địa của Pháp được mô tả ở quy mô nào?","Lớn thứ 2 thế giới, rộng 11 triệu km2","Lớn nhất thế giới, rộng 20 triệu km2","Thứ 4 thế giới, rộng 5 triệu km2","Chỉ tập trung tại Việt Nam"],
+["Tại Việt Nam, chiến lược chính trị nào được tư liệu nêu?","“Chia để trị”, chia Việt Nam thành 3 kỳ","Quốc hữu hóa toàn bộ ruộng đất","Tự do hóa thị trường hoàn toàn","Kế hoạch kinh tế toàn diện"],
+["Chính sách kinh tế tại thuộc địa được mô tả bằng hoạt động nào?","Khai thác khoáng sản, lập đồn điền, độc quyền thương mại và thuế muối/rượu/thuốc phiện","Phát triển phúc lợi xã hội và hàng không vũ trụ","Tư nhân hóa ngân hàng và hội nhập EU","Chỉ sản xuất xa xỉ phẩm"],
+["Mâu thuẫn cơ bản nào được nêu trong cơ cấu xã hội tư bản Pháp?","Tư sản - Vô sản và Chính quốc - Thuộc địa","Ngân hàng - Đường sắt và Dệt - Luyện kim","EU - Thái Bình Dương và Nga - Pháp","Công nghệ cao - Xa xỉ phẩm"],
+["Cuối thế kỷ XX đến hiện đại, Pháp chuyển theo xu hướng nào trong tài liệu?","Tư nhân hóa, tự do hóa thị trường và hội nhập sâu vào EU","Trở lại kinh tế nông nghiệp phong kiến","Cấm ngân hàng và giảm thương mại","Bãi bỏ công nghệ cao và hàng không vũ trụ"]];
+const QS=QS0.map((a,i)=>({id:i+1,question:a[0],options:a.slice(1).map((text,k)=>({id:`q${i+1}-${LETTERS[k].toLowerCase()}`,text})),answerId:`q${i+1}-a`}));
+const TB=[["Trong chính sách kinh tế tại thuộc địa, các loại thuế độc quyền nào được nêu?","Muối, rượu, thuốc phiện"],["Giai đoạn 1945-1975, những công cụ nào được nêu giúp kinh tế phát triển?","Quốc hữu hóa ngành trọng yếu, lập kế hoạch kinh tế, phúc lợi xã hội"],["Cuối thế kỷ XX-hiện đại, ngoài công nghệ cao và hàng không vũ trụ, ngành nào được nêu?","Xa xỉ phẩm"]];
+const E=[
+[1,'Tăng Tốc','C',0,'Cộng ngay +100 điểm. Chỉ dùng 1 lần cho mỗi đội.'],
+[2,'Đường Ray Vàng','C',0,'Ở câu tiếp theo, nếu đội bạn trả lời đúng thì nhận +150 điểm thay vì +100. Không cộng dồn.'],
+[3,'Kho Báu','C',0,'Cộng ngay +75 điểm. Chỉ dùng 1 lần cho mỗi đội.'],
+[4,'Ngân Hàng','C',0,'Cộng ngay +100 điểm và nhận 1 Khiên. Nếu đã đủ 2 Khiên thì chỉ nhận điểm. Tối đa 2 Khiên.'],
+[5,'Tư Bản Tích Lũy','R',0,'Ở câu tiếp theo, nếu đội bạn trả lời đúng thì nhận +125 điểm. Nếu sai thì không có thêm điểm. Chỉ giữ 1 hiệu ứng chờ.'],
+[6,'Chia Sẻ Lợi Tức','C',0,'Chọn 1 trong 2 đội đối thủ. Đội bạn và đội được chọn cùng nhận +50 điểm. Không được chọn chính mình.'],
+[7,'Lợi Tức Quốc Tế','R',0,'Cộng ngay +125 điểm. Chỉ dùng 1 lần cho mỗi đội.'],
+[8,'Mở Tuyến','C',0,'Xóa 1 hiệu ứng bất lợi đang chờ trên đội bạn và nhận +50 điểm. Nếu không có hiệu ứng bất lợi vẫn nhận +50.'],
+[9,'Hợp Đồng Vàng','R',0,'Ở câu tiếp theo, nếu đội bạn trả lời đúng thì nhận +200 điểm. Nếu sai thì mất cơ hội nhận thêm. Chỉ giữ 1 hiệu ứng chờ.'],
+[10,'Dự Trữ','C',0,'Đặt một “Kho 50”. Đội bạn không nhận điểm ngay; sau khi trả lời đúng câu kế tiếp mới nhận thêm +50 điểm. Không cộng dồn.'],
+[11,'Bỏ Lượt','R',1,'Chọn 1 đội đối thủ. Lượt kế tiếp của đội đó bị bỏ. Không được bỏ quá 1 lượt liên tiếp của cùng một đội.'],
+[12,'Chia Để Trị','C',1,'Chọn 1 đội. Trong câu kế tiếp của đội đó, khóa 1 đáp án.'],
+[13,'Phong Tỏa Thị Trường','C',1,'Chọn 1 đội. Nếu đội đó trả lời đúng câu tiếp theo, họ chỉ nhận +50 điểm. Chỉ tác dụng 1 câu.'],
+[14,'Thu Thuế','C',1,'Lấy 50 điểm từ 1 đội đối thủ và chuyển 50 điểm đó cho đội bạn. Đội bị lấy không thể xuống dưới 0.'],
+[15,'Khóa Đường Ray','R',1,'Chọn 1 đội. Ở lần rút Event kế tiếp của đội đó, họ không được nhận thẻ. Chỉ tác dụng 1 lần.'],
+[16,'Suy Giảm','C',1,'Chọn 1 đội và trừ 75 điểm. Điểm không thể xuống dưới 0.'],
+[17,'Độc Quyền','R',1,'Chọn 1 đội. Ở lượt kế tiếp của đội đó, họ không được dùng thẻ Tấn Công. Thẻ Phòng Thủ vẫn dùng được.'],
+[18,'Cắt Tuyến','C',1,'Chọn 1 đội. Ở câu kế tiếp, tổng điểm cộng của đội đó chỉ được tính tối đa +50. Chỉ tác dụng 1 câu.'],
+[19,'Nhiều Đường Ray','C',1,'Chọn 1 đội. Hai đáp án sai còn lại sẽ bị đảo vị trí hiển thị để gây nhiễu. Đáp án đúng và nội dung đáp án không đổi. Đội bị chọn không biết trước.'],
+[20,'Cú Chặn','R',1,'Chọn 1 đội. Nếu đội đó trả lời đúng câu kế tiếp, đội bạn nhận thêm +50 điểm thưởng. Nếu họ trả lời sai thì không có gì xảy ra.'],
+[21,'Đảo Chiều','C',2,'Đảo hướng vòng chơi. Ví dụ A → B → C sẽ thành A → C → B. Chỉ kích hoạt 1 lần mỗi lần dùng.'],
+[22,'Đổi Lượt','R',2,'Chọn 1 trong 2 đội còn lại làm đội kế tiếp. Hiệu ứng này chỉ thay đổi 1 bước lượt chơi.'],
+[23,'Joker Lượt','R',2,'Chọn 1 đội đối thủ chơi ngay sau đội bạn. Sau lượt đó, vòng chơi tiếp tục theo hướng cũ. Thẻ này không cho đội bạn thêm 1 lượt.'],
+[24,'Lướt Qua','C',2,'Đội kế tiếp bị bỏ qua trong lượt hiện tại, nhưng vẫn được chơi bình thường ở vòng sau. Không dồn 2 lần bỏ lượt.'],
+[25,'Vượt Ga','R',2,'Đội hiện tại được chơi thêm 1 câu ngay sau lượt này. Một đội không được có quá 2 lượt liên tiếp.'],
+[26,'Chuyển Ga','C',2,'Đổi thứ tự của 2 đội đối thủ ở bước lượt kế tiếp.'],
+[27,'Khóa Thứ Tự','C',2,'Trong 2 câu tiếp theo, các thẻ không được phép thay đổi thứ tự lượt. Lệnh Bỏ Lượt đã có từ trước vẫn được thực hiện.'],
+[28,'Xáo Tuyến','R',2,'Xáo ngẫu nhiên vị trí lượt của cả 3 đội trong 3 câu tiếp theo. Chỉ đổi thứ tự lượt, không đổi điểm/hạng và không tạo thêm lượt.'],
+[29,'Khiên','C',3,'Chặn 1 thẻ Tấn Công đang nhắm vào đội bạn. Tối đa 2 Khiên.'],
+[30,'Giáp Đường Ray','R',3,'Chặn 1 trong 2 hiệu ứng: Bỏ Lượt hoặc Lướt Qua. Mỗi lá chỉ chặn được 1 lần.'],
+[31,'Bảo Toàn','C',3,'Bỏ qua lần trừ điểm tiếp theo của đội bạn, dù là do thẻ Event hay do trả lời sai. Chỉ chặn 1 lần.'],
+[32,'Phản Hồi','R',3,'Khi một thẻ Tấn Công bị chặn thành công bằng lớp Phòng Thủ này, đội sử dụng thẻ tấn công bị trừ 50 điểm. Hiệu ứng chỉ xảy ra khi đã chặn thành công.'],
+[33,'Miễn Nhiễm','C',3,'Miễn cho đội bạn 1 hiệu ứng bất lợi tiếp theo. Thẻ này không chặn hiệu ứng cộng điểm. Chỉ dùng 1 lần.'],
+[34,'Cứu Hộ','R',3,'Nếu đội bạn sắp bị Bỏ Lượt hoặc Lướt Qua, hủy hiệu ứng đó và giữ nguyên thứ tự. Chỉ dùng 1 lần.'],
+[35,'Cách Mạng','R',4,'Xóa các điểm cộng đang chờ của đội bạn, sau đó nhận ngay +100 điểm. Chỉ tác dụng lên đội sử dụng.'],
+[36,'Tái Phân Phối','L',4,'Đội đứng đầu chuyển 50 điểm cho đội đứng cuối. Nếu đội bạn đang đứng cuối thì đội bạn nhận 50 điểm. Tối đa 50 điểm mỗi lần.'],
+[37,'Khủng Hoảng','R',4,'Cả 3 đội cùng bị trừ 50 điểm, kể cả đội đang dùng thẻ. Không đội nào bị xuống dưới 0. Chỉ dùng 1 lần.'],
+[38,'Mốc 1914','L',4,'Ở câu tiếp theo, nếu đội bạn trả lời đúng thì nhận +200 điểm. Nếu sai thì không có bonus. Chỉ giữ 1 hiệu ứng chờ.'],
+[39,'Thời Đại Mới','R',4,'Xóa 1 hiệu ứng bất lợi đang có trên đội bạn và nhận ngay +100 điểm. Không xóa lệnh Bỏ Lượt đã được ghi từ trước.'],
+[40,'Đường Tàu Cuối Cùng','L',4,'Chọn ngay 1 trong 2 phương án: nhận +250 điểm ngay, hoặc chờ câu kế tiếp và nhận +350 điểm nếu trả lời đúng. Đã chọn thì không đổi lại.']
+];
+const EVENTS=E.map(([id,name,rarity,group,desc])=>({id,name,rarity,group,desc}));
+const EVENT_BY_ID=new Map(EVENTS.map(e=>[e.id,e]));
+
+let G=null;
+let mute=false;
+let audioCtx=null;
+let modalState=null;
+let actionLock=false;
+
+function esc(v){return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[b[i],b[j]]=[b[j],b[i]]}return b}
+function say(msg){$("#status").textContent=msg||""}
+function playTone(kind){if(mute)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const map={click:[520],ok:[600,800],bad:[220,160],event:[500,700,900],legend:[600,800,1000,1300],finish:[500,650,800,1000]};for(const [idx,f] of (map[kind]||map.click).entries()){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.value=.045;o.connect(g);g.connect(audioCtx.destination);o.start(audioCtx.currentTime+idx*.1);o.stop(audioCtx.currentTime+idx*.1+.08)}}catch(_){}}
+function withAction(fn){if(actionLock)return;actionLock=true;try{fn()}finally{setTimeout(()=>actionLock=false,0)}}
+function stageIndex(){return Math.min(3,Math.floor(G.questionIndex/6))}
+function doneGame(){return G&&["FINAL","TIEBREAK"].includes(G.phase)}
+function rankedTeams(){
+  const topScore=Math.max(...G.teams.map(t=>t.score));
+  const top=G.teams.filter(t=>t.score===topScore);
+  const fallbackActive=!!G.tieBreakResolvedByCorrect&&G.tieTeams?.length>1;
+  const correctMax=fallbackActive?Math.max(...G.tieTeams.map(id=>teamById(id)?.correct||0)):-1;
+  return [...G.teams].sort((a,b)=>{
+    if(a.score!==b.score)return b.score-a.score;
+    if(G.tieBreakWinner!==null){
+      if(a.id===G.tieBreakWinner)return -1;
+      if(b.id===G.tieBreakWinner)return 1;
+    }
+    if(fallbackActive && a.score===topScore && b.score===topScore && a.correct!==b.correct)return b.correct-a.correct;
+    return b.correct-a.correct;
+  });
+}
+
+function makePositionBag(){
+  const bag=[...Array(6).fill("A"),...Array(6).fill("B"),...Array(6).fill("C"),...Array(6).fill("D")];
+  const hasTriple=x=>x.some((v,i)=>i>=2&&x[i-1]===v&&x[i-2]===v);
+  for(let attempt=0;attempt<5000;attempt++){const x=shuffle(bag);if(!hasTriple(x))return x}
+  return ["A","C","B","D","B","C","D","B","C","A","D","A","C","A","D","B","A","C","B","D","C","B","A","D"];
+}
+function arrangeQuestion(q,index){
+  const target=LETTERS.indexOf(G.positionBag[index]);
+  const correct=q.options.find(o=>o.id===q.answerId);
+  const wrong=shuffle(q.options.filter(o=>o.id!==q.answerId));
+  const out=new Array(4);out[target]=correct;let k=0;for(let i=0;i<4;i++)if(!out[i])out[i]=wrong[k++];return out;
+}
+function applyAnswerDistortion(arr,kind,q){
+  if(kind==="lock"){const wrong=arr.map((o,i)=>o.id===q.answerId?-1:i).filter(i=>i>=0);return {arr,disabledIndex:wrong[(Math.random()*wrong.length)|0]}}
+  if(kind==="swap"){const wrong=arr.map((o,i)=>o.id===q.answerId?-1:i).filter(i=>i>=0);const pair=shuffle(wrong).slice(0,2);[arr[pair[0]],arr[pair[1]]]=[arr[pair[1]],arr[pair[0]]];return {arr,disabledIndex:-1}}
+  return {arr,disabledIndex:-1};
+}
+function prepareQuestion(){
+  if(!G||G.questionIndex<0||G.questionIndex>=QS.length)return;
+  if(G.renderedQuestionIndex===G.questionIndex&&Array.isArray(G.renderedOptions)&&G.renderedOptions.length===4)return;
+  const t=currentTeam(),q=QS[G.questionIndex];const d=applyAnswerDistortion(arrangeQuestion(q,G.questionIndex),t.negativePending?.kind,q);
+  G.renderedOptions=d.arr;G.disabledIndex=d.disabledIndex;G.renderedQuestionIndex=G.questionIndex;saveState();
+}
+
+function freshTeam(i,name){return {
+  id:i,name,score:0,hand:[],armed:[],positivePending:null,negativePending:null,
+  skipPending:false,skipStreak:0,turns:0,correct:0,wrong:0,eventsReceived:0,eventsUsed:0,eventsBlocked:0,attacks:0,blocked:0,skipped:0,
+  scoreDelta:"",deltaTimer:0,tieBreakWinner:false,lastDeductionBlocked:false
+}}
+function newGame(names=DEFAULT_NAMES){
+  G={teams:names.map((n,i)=>freshTeam(i,n)),currentTeam:0,direction:1,questionIndex:0,eventCount:0,usedEventIds:[],positionBag:makePositionBag(),
+     renderedOptions:[],renderedQuestionIndex:-1,disabledIndex:-1,lastResult:null,phase:"STAGE_INTRO",pendingEventId:null,turnPlan:[],forcedNext:null,forcedFollowNext:null,extraRequested:false,consecutiveTurns:1,
+     lockOrderTurns:0,lockStartQuestion:-1,lockLastConsumedQuestion:-1,deferredReverse:false,lastAttack:{owner:-1,target:-1},lastSkipTarget:-1,eventRollOutcome:null,
+     questionAttempts:[],attemptedTeams:[],questionStartTeam:0,questionLastTeam:null,questionResolved:false,
+     lastMessage:"",tieTeams:[],tieBreakIndex:0,tieBreakWinner:null,tieBreakResolvedByCorrect:false,turnModifierNote:"",stageShown:0,startedAt:Date.now()
+  };
+  persist();stageIntro(0);
+}
+function currentTeam(){return G.teams[G.currentTeam]}
+function otherTeams(){return G.teams.filter(t=>t.id!==G.currentTeam)}
+function setPhase(phase){G.phase=phase;saveState()}
+function teamById(id){return G.teams.find(t=>t.id===id)}
+function setDelta(t,text){t.scoreDelta=text;clearTimeout(t._deltaTimer);t._deltaTimer=setTimeout(()=>{t.scoreDelta="";renderBoard()},1150)}
+function addPoints(t,n){if(n<=0)return;t.score+=n;setDelta(t,`+${n}`);renderBoard()}
+function deductPoints(t,n){
+  t.lastDeductionBlocked=false;
+  const idx=t.armed.indexOf(31);if(idx>=0){t.armed.splice(idx,1);t.lastDeductionBlocked=true;setDelta(t,"Bảo Toàn");t.eventsBlocked++;return 0}
+  const handIdx=t.hand.indexOf(31);if(handIdx>=0){t.hand.splice(handIdx,1);t.lastDeductionBlocked=true;setDelta(t,"Bảo Toàn");t.eventsBlocked++;t.eventsUsed++;saveState();return 0}
+  const d=Math.min(n,t.score);t.score-=d;if(d)setDelta(t,`-${d}`);return d;
+}
+function transferPoints(from,to,n){const d=deductPoints(from,n);if(d)addPoints(to,d);return d}
+function setPositive(t,total,kind="bonus"){if(!t.positivePending||total>t.positivePending.total)t.positivePending={total,kind};else say("Lá bonus yếu hơn bị loại, không tích chồng.")}
+function clearNegative(t){t.negativePending=null}
+function setNegative(t,kind,by){
+  if(t.negativePending?.kind===kind){say("Debuff cùng loại đang chờ nên không tích chồng.");return false}
+  t.negativePending={kind,by};return true;
+}
+
+function normalNextFrom(id){return (id+G.direction+3)%3}
+function rawNextTeam(){
+  if(G.extraRequested)return G.currentTeam;
+  if(G.forcedNext!==null)return G.forcedNext;
+  if(G.turnPlan.length)return G.turnPlan[0];
+  if(G.forcedFollowNext!==null)return G.forcedFollowNext;
+  return normalNextFrom(G.currentTeam);
+}
+function turnModifierBusy(){return G.forcedNext!==null||G.turnPlan.length>0||G.forcedFollowNext!==null||G.deferredReverse||G.extraRequested}
+function consumeOrderLock(){
+  if(G.lockOrderTurns>0 && G.questionIndex>G.lockStartQuestion && G.lockLastConsumedQuestion!==G.questionIndex){
+    G.lockOrderTurns--;G.lockLastConsumedQuestion=G.questionIndex;
+    if(G.lockOrderTurns===0&&G.deferredReverse){G.direction*=-1;G.deferredReverse=false;G.turnModifierNote="Đảo Chiều được áp dụng sau Khóa Thứ Tự.";say(G.turnModifierNote)}
+  }
+}
+function startQuestionForTeam(id){
+  G.currentTeam=id;
+  G.questionStartTeam=id;
+  G.questionLastTeam=null;
+  G.questionAttempts=[];
+  G.attemptedTeams=[];
+  G.questionResolved=false;
+  G.lastResult=null;
+  const t=currentTeam();t.skipStreak=0;t.turns++;
+  G.renderedQuestionIndex=-1;G.renderedOptions=[];G.disabledIndex=-1;
+  prepareQuestion();setPhase("QUESTION");renderQuestion();
+}
+function retryQuestionForTeam(id){
+  G.currentTeam=id;
+  G.lastResult=null;
+  setPhase("QUESTION");
+  renderQuestion();
+}
+function answeredAttemptCount(){return G.questionAttempts.filter(a=>a.status!=="skipped").length}
+function hasAttemptedTeam(id){return Array.isArray(G.attemptedTeams)&&G.attemptedTeams.includes(id)}
+function nextAnsweringTeam(fromId){
+  const visited=new Set([fromId]);
+  let candidate=normalNextFrom(fromId);
+  for(let i=0;i<3;i++){
+    if(visited.has(candidate))break;
+    visited.add(candidate);
+    const t=teamById(candidate);
+    if(!t){candidate=normalNextFrom(candidate);continue}
+    if(hasAttemptedTeam(candidate)){candidate=normalNextFrom(candidate);continue}
+    if(t.skipPending){
+      t.skipPending=false;t.skipStreak=1;t.skipped++;
+      G.attemptedTeams.push(candidate);
+      G.questionAttempts.push({teamId:candidate,status:"skipped"});
+      say(`${t.name} bị Bỏ Lượt và không tham gia câu này.`);
+      candidate=normalNextFrom(candidate);
+      continue;
+    }
+    return candidate;
+  }
+  return null;
+}
+function resolveSkipCandidate(candidate,fromSource){
+  const t=teamById(candidate);
+  if(!t)return null;
+  if(t.skipPending){t.skipPending=false;t.skipStreak=1;t.skipped++;say(`${t.name} bị Bỏ Lượt. Hệ thống tiếp tục tìm lượt hợp lệ.`);return {skipped:true,fromSource}}
+  return {skipped:false,fromSource};
+}
+function chooseNextTeam(){
+  const old=G.currentTeam;let next=null;let source="normal";let followAfterForced=null;
+  if(G.extraRequested && G.consecutiveTurns<2){
+    G.extraRequested=false;G.consecutiveTurns++;G.questionIndex++;G.currentTeam=old;
+    if(G.questionIndex%6===0){stageIntro(G.questionIndex/6|0);return}
+    startQuestionForTeam(old);return;
+  }
+  G.extraRequested=false;
+  if(G.forcedNext!==null){next=G.forcedNext;G.forcedNext=null;source="forced";followAfterForced=G.forcedFollowNext;G.forcedFollowNext=null}
+  else if(G.turnPlan.length){next=G.turnPlan.shift();source="plan"}
+  else if(G.forcedFollowNext!==null){next=G.forcedFollowNext;G.forcedFollowNext=null;source="forced-follow"}
+  else{next=normalNextFrom(old);source="normal"}
+
+  const visited=new Set();
+  while(visited.size<3){
+    if(next===null||visited.has(next))break;visited.add(next);
+    const t=teamById(next);
+    if(t&&t.skipPending){t.skipPending=false;t.skipStreak=1;t.skipped++;say(`${t.name} bị Bỏ Lượt.`);
+      if(source==="plan"&&G.turnPlan.length){next=G.turnPlan.shift();continue}
+      if(source==="forced"&&followAfterForced!==null){next=followAfterForced;followAfterForced=null;source="forced-follow";continue}
+      next=normalNextFrom(next);continue;
+    }
+    break;
+  }
+  if(source==="forced"&&followAfterForced!==null)G.forcedFollowNext=followAfterForced;
+  G.consecutiveTurns=(next===old)?Math.min(2,G.consecutiveTurns+1):1;
+  consumeOrderLock();
+  if(G.questionIndex>=23){G.currentTeam=next;finishCheck();return}
+  G.questionIndex++;G.currentTeam=next;
+  if(G.questionIndex%6===0){stageIntro(G.questionIndex/6);return}
+  startQuestionForTeam(next);
+}
+
+function renderTop(){
+  const s=stageIndex(),t=currentTeam(),rank=[...rankedTeams()].findIndex(x=>x.id===t.id)+1;
+  const text=`<div class="top-main"><span class="top-pill">Chặng ${s+1}: ${STAGES[s]}</span><span>· Câu ${doneGame()?24:Math.min(24,G.questionIndex+1)}/24</span><span>· Event ${G.eventCount}/18</span><span>· ${t.name} đang chơi · Hạng #${rank}</span></div><button class="mute-btn" data-action="mute">${mute?"Bật âm":"Tắt âm"}</button>`;
+  $("#top").innerHTML=text;
+}
+function renderRoute(){
+  const p=doneGame()?100:(G.questionIndex/23)*100;const stops=[0,1,2,3];
+  $("#route").innerHTML=`<div class="route-line"></div><div class="route-fill" style="width:${Math.max(0,Math.min(100,p))}%"></div>`+
+    stops.map(i=>`<div class="stop ${i===0?"first ":i===3?"last ":""}${G.questionIndex>=i*6||doneGame()?"on":""}" style="left:${1+i*32.66}%">${i+1}<span>${STAGES[i]}</span></div>`).join("")+`
+    <svg class="train" viewBox="0 0 48 30" style="left:${Math.max(2,Math.min(98,1+p*.98))}%" aria-label="Đầu tàu"><rect class="body" x="2" y="8" width="28" height="14" rx="3"/><rect class="cab" x="28" y="4" width="14" height="18" rx="3"/><circle class="wheel" cx="12" cy="25" r="4"/><circle class="wheel" cx="32" cy="25" r="4"/><circle class="wheel" cx="43" cy="14" r="2.5"/></svg>`;
+}
+function renderBoard(){if(!G)return;const board=$("#board");if(board)board.setAttribute("aria-label","Bảng điểm trực tiếp");renderTop();const ranked=rankedTeams();const maxScore=Math.max(100,...G.teams.map(t=>t.score));const current=currentTeam();$("#board").innerHTML=`<div class="scoreboard-head"><div class="scoreboard-title"><span>🏆 SCOREBOARD</span><span class="scoreboard-live">● LIVE</span></div><div class="scoreboard-sub">Điểm được cập nhật ngay sau mỗi câu trả lời và Event</div></div>`+G.teams.map(t=>{const rank=ranked.findIndex(x=>x.id===t.id)+1;const active=t.id===G.currentTeam&&!doneGame();const chips=[];
+  if(t.positivePending)chips.push(`<span class="status-chip good">Bonus +${t.positivePending.total}</span>`);
+  if(t.negativePending)chips.push(`<span class="status-chip bad">${esc(NEGATIVE_LABEL[t.negativePending.kind]||t.negativePending.kind)}</span>`);
+  if(t.skipPending)chips.push(`<span class="status-chip bad">Sẽ Bỏ Lượt</span>`);
+  if(t.armed.length)chips.push(`<span class="status-chip good">Bảo vệ ${t.armed.length}</span>`);
+  const pct=Math.max(0,Math.min(100,(t.score/maxScore)*100));
+  return `<div class="team-card ${active?"active":""}" style="--c:${TEAM_COLORS[t.id]}"><div class="score-rankline"><div class="team-name">${esc(t.name)}</div><div class="rank-badge">#${rank}</div></div><div class="score-line"><div class="score">${t.score}${t.scoreDelta?`<span class="score-float ${t.scoreDelta[0]==="-"?"bad":""}">${esc(t.scoreDelta)}</span>`:""}</div><span class="score-label">điểm</span></div><div class="score-progress"><i style="width:${pct}%"></i></div><div class="team-meta">${active?"🟢 ĐANG CHƠI · ":""}Đúng: ${t.correct} · Sai: ${t.wrong} · Event: ${t.hand.length}/3</div><div>${chips.join("")}</div></div>`;
+}).join("")}
+function renderShell(){
+  const game=!!G;document.body.classList.toggle("g",game);if(!game){$("#top").style.display="none";$("#route").style.display="none";$("#layout").style.display="block";$("#main").style.display="block";$("#board").style.display="none";$("#status").style.display="none";return}
+  $("#top").style.display="flex";$("#route").style.display="block";$("#layout").style.display="flex";$("#main").style.display="block";$("#board").style.display="flex";$("#status").style.display="flex";renderTop();renderRoute();renderBoard();
+}
+function scr(html){$("#main").innerHTML=html;renderShell()}
+
+function stageArt(i){return `<div class="stage-art stage-${i+1}"><div class="sun"></div><div class="art-ground"></div><div class="scene">${i===0?'<span class="field"></span><span class="market"></span>':i===1?'<span class="factory"></span><span class="chimney"></span><span class="track"></span>':i===2?'<span class="bank"></span><span class="net"></span>':'<span class="map"></span><span class="city"></span>'}</div></div>`}
+function home(){G=null;renderShell();const saved=loadSavedRaw();scr(`<div class="card center"><div class="stage-kicker">BRIGHT HISTORICAL EXPEDITION</div><h1>TƯ BẢN PHÁP</h1><h2>CHUYẾN TÀU ÁNH DƯƠNG</h2><p>Ba đội cùng đi trên một tuyến tàu lịch sử. Kiến thức quyết định tốc độ; Event mở đường, cản đường hoặc đảo chiều cuộc đua.</p><div class="hero-route">${STAGES.map((s,i)=>`<div class="hero-stop">GA ${i+1}<br>${s}</div>`).join("")}</div><p><b>3 đội · 24 câu · Event 70% · 40 lá · tối đa 18 Event</b></p>${saved?`<div class="resume-box"><b>Đang có một ván được lưu.</b><p class="small">Có thể tiếp tục đúng trạng thái trước đó, kể cả khi trang vừa được tải lại.</p><button class="pri" data-action="resume">Tiếp tục ván lưu</button></div>`:""}<div class="bottom-actions"><button class="${saved?"ghost":"pri"}" data-action="setup">${saved?"Bắt đầu ván mới":"Bắt đầu"}</button>${saved?'<button class="warn" data-action="clear-save">Xóa ván lưu</button>':""}</div></div>`)}
+function setup(){G=null;scr(`<div class="card"><h2>Thiết lập 3 đội</h2><p class="small">Tên chỉ dùng để hiển thị trong ván. Màu đội được cố định theo thiết kế.</p><div class="setup-grid">${DEFAULT_NAMES.map((n,i)=>`<div class="setup-team" style="--c:${TEAM_COLORS[i]}"><b style="color:${TEAM_COLORS[i]}">Đội ${i+1}</b><input type="text" maxlength="20" id="teamNm${i}" value="${esc(n)}" autocomplete="off"></div>`).join("")}</div><div class="bottom-actions"><button class="pri" data-action="start">Xác nhận & xuất phát</button></div></div>`)}
+function stageIntro(s){G.stageShown=s;setPhase("STAGE_INTRO");scr(`<div class="card stage-wrap center">${stageArt(s)}<div style="position:relative;z-index:2;max-width:760px"><div class="stage-kicker">CHẶNG ${s+1}</div><h1>${STAGES[s]}</h1><p>${STAGE_DESC[s]}</p><p><b>Câu ${s*6+1} – ${Math.min(24,s*6+6)}</b></p><button class="pri" data-action="go">Tiếp tục</button></div></div>`)}
+
+function renderQuestion(){
+  const t=currentTeam(),q=QS[G.questionIndex];const n=t.negativePending;
+  const chips=[];
+  if(n)chips.push(`<div class="note"><b>Debuff:</b> ${esc(NEGATIVE_LABEL[n.kind]||n.kind)}</div>`);
+  const nextAttempt=Math.min(3,answeredAttemptCount()+1);
+  const attemptHistory=G.questionAttempts.map(a=>{
+    const team=teamById(a.teamId);if(!team)return "";
+    const label=a.status==="correct"?"ĐÚNG":a.status==="wrong"?"SAI":"BỎ LƯỢT";
+    return `<span class="attempt-chip ${a.status}">${esc(team.name)} · ${label}</span>`;
+  }).join("");
+  const hand=t.hand.length? t.hand.map((id,i)=>{const e=EVENT_BY_ID.get(id);const reason=canUseEvent(t,e.id);const defense=DEFENSE_IDS.has(e.id);return `<div class="hand-card"><div><div class="evt-name">${esc(e.name)}</div><div class="evt-desc">${esc(e.desc)}</div>${e.id===31?'<div class="evt-hint">Tự kích hoạt ở lần trừ điểm tiếp theo</div>':(defense?'<div class="evt-hint">Chỉ phản ứng khi bị tấn công</div>':(reason?`<div class="evt-hint">${esc(reason)}</div>`:" "))}</div><button data-action="held" data-index="${i}" ${reason||defense?'disabled':''}>${e.id===31?"Tự động":(defense?"Phản ứng":"Dùng")}</button></div>`}).join("") : '<div class="small">Chưa giữ lá Event nào.</div>';
+  scr(`<div class="card question-card"><div class="question-head"><span class="who" style="background:${TEAM_COLORS[t.id]}">Lượt của: ${esc(t.name)}</span><span class="stage-kicker">${STAGES[stageIndex()]} · Câu ${G.questionIndex+1}</span></div>${chips.join("")}<div class="attempt-bar"><div><div class="attempt-title">Lượt trả lời ${nextAttempt}/3</div><div class="attempt-sub">Mỗi đội chỉ được thử 1 lần trong câu này.</div></div><div class="attempt-list">${attemptHistory||'<span class="attempt-chip">Chưa có đội nào trả lời</span>'}</div></div><div class="question">${esc(q.question)}</div><div class="options">${G.renderedOptions.map((o,i)=>`<button class="option ${G.disabledIndex===i?"locked":""}" data-action="answer" data-index="${i}" ${G.disabledIndex===i?"disabled":""}><span class="letter">${LETTERS[i]}</span><span>${esc(o.text)}</span></button>`).join("")}</div><div class="hand"><div class="section-row"><h3>Event đang giữ</h3><span class="small">Tối đa 3 lá</span></div>${hand}</div></div>`);
+}
+function answer(index){
+  index=+index;
+  if(G.phase!=="QUESTION"||G.disabledIndex===index||!Number.isInteger(index)||index<0||index>=G.renderedOptions.length)return;
+  const t=currentTeam(),q=QS[G.questionIndex],chosen=G.renderedOptions[index];
+  if(!chosen||hasAttemptedTeam(t.id))return;
+  const ok=chosen.id===q.answerId;
+  G.questionLastTeam=t.id;
+  G.attemptedTeams.push(t.id);
+  if(ok){
+    t.correct++;let total=100;if(t.positivePending)total=t.positivePending.total;if(t.negativePending?.kind==="c50")total=50;if(t.negativePending?.kind==="cut")total=Math.min(total,150);
+    addPoints(t,total);let msg=`ĐÚNG! +${total} điểm`;t.positivePending=null;
+    if(t.negativePending?.kind==="inter"){const attacker=teamById(t.negativePending.by);if(attacker)transferPoints(t,attacker,50);msg+=` · Cú Chặn: ${attacker?attacker.name:"đối thủ"} nhận tối đa 50`;}
+    playTone("ok");
+    if(t.negativePending&&["lock","c50","cut","swap","inter"].includes(t.negativePending.kind))t.negativePending=null;
+    G.questionAttempts.push({teamId:t.id,status:"correct",chosenIndex:index,points:total});
+    G.questionResolved=true;
+    G.lastResult={questionIndex:G.questionIndex,chosenIndex:index,correct:true,resolved:true,message:msg,answererId:t.id};
+  }else{
+    t.wrong++;const d=deductPoints(t,130);const msg=t.lastDeductionBlocked?`SAI! Bảo Toàn chặn -130 điểm.`:(d?`SAI! -${d} điểm`:`SAI! Điểm giữ ở mức 0`);
+    if(t.positivePending?.kind!=="keep")t.positivePending=null;
+    if(t.negativePending&&["lock","c50","cut","swap","inter"].includes(t.negativePending.kind))t.negativePending=null;
+    G.questionAttempts.push({teamId:t.id,status:"wrong",chosenIndex:index,deducted:d});
+    const allAnswered=answeredAttemptCount()>=3;
+    G.questionResolved=allAnswered;
+    G.lastResult={questionIndex:G.questionIndex,chosenIndex:index,correct:false,resolved:allAnswered,message:msg,answererId:t.id};
+    playTone("bad");
+  }
+  G.phase="RESULT";
+  say(G.lastResult.message);saveState();renderResult();
+}
+function renderResult(){
+  const q=QS[G.questionIndex],r=G.lastResult,t=teamById(r?.answererId??G.currentTeam)||currentTeam();
+  if(!r||r.questionIndex!==G.questionIndex){G.phase="QUESTION";prepareQuestion();renderQuestion();return}
+  const correctPos=G.renderedOptions.findIndex(o=>o.id===q.answerId);
+  const canContinue=r.resolved||answeredAttemptCount()>=3;
+  const nextTeamPreview=canContinue?null:nextAnsweringTeamPreview(t.id);
+  const handoff=nextTeamPreview?`<div class="handoff">Quyền trả lời chuyển cho <b>${esc(nextTeamPreview.name)}</b>.</div>`:"";
+  const answerNote=canContinue?`<div class="note">Đáp án đúng: <b>${LETTERS[correctPos]}</b> · ${esc(q.options.find(o=>o.id===q.answerId)?.text||"")}</div>`:'<div class="note">Chưa hiện đáp án. Đội chưa trả lời còn có quyền thử câu này.</div>';
+  const buttonLabel=canContinue?(G.questionIndex>=23?"Kết thúc ván":"Tiếp tục"):(nextTeamPreview?`Chuyển lượt → ${nextTeamPreview.name}`:"Hiện đáp án");
+  scr(`<div class="card"><span class="who" style="background:${TEAM_COLORS[t.id]}">${esc(t.name)}</span><div class="stage-kicker" style="margin-top:10px">${answeredAttemptCount()}/3 lượt đã trả lời</div><div class="question">Câu ${G.questionIndex+1}. ${esc(q.question)}</div><div class="options">${G.renderedOptions.map((o,k)=>{const cls=(canContinue&&o.id===q.answerId)?"correct":(!r.correct&&k===r.chosenIndex?"wrong":"");return `<div class="option ${cls}"><span class="letter">${LETTERS[k]}</span><span>${esc(o.text)}</span></div>`}).join("")}</div><div class="result ${r.correct?"good":"bad"}">${esc(r.message)}</div>${handoff}${answerNote}<div class="bottom-actions"><button class="pri" data-action="after">${esc(buttonLabel)}</button></div></div>`);
+}
+function nextAnsweringTeamPreview(fromId){
+  const visited=new Set([fromId]);let candidate=normalNextFrom(fromId);
+  for(let i=0;i<3;i++){if(visited.has(candidate))break;visited.add(candidate);if(hasAttemptedTeam(candidate)){candidate=normalNextFrom(candidate);continue}const t=teamById(candidate);if(!t){candidate=normalNextFrom(candidate);continue}if(t.skipPending){candidate=normalNextFrom(candidate);continue}return t;}
+  return null;
+}
+function advanceAfterWrong(){
+  const from=G.currentTeam;const next=nextAnsweringTeam(from);
+  if(next===null){
+    G.questionResolved=true;
+    G.lastResult.resolved=true;
+    G.lastResult.allFailed=true;
+    saveState();renderResult();return;
+  }
+  retryQuestionForTeam(next);
+}
+function afterResult(){
+  if(G.phase!=="RESULT")return;
+  if(G.lastResult&&!G.lastResult.resolved){advanceAfterWrong();return}
+  if(G.questionIndex>=23){finishCheck();return}
+  rollEvent();
+}
+function attackTargetValid(owner,e,target){
+  if(!target||target.id===owner.id)return false;
+  if(ATTACK_IDS.has(e.id)&&G.lastAttack.owner===owner.id&&G.lastAttack.target===target.id)return false;
+  if([11,24].includes(e.id)&&G.lockOrderTurns>0)return false;
+  if([11,24].includes(e.id)&&(target.skipPending||target.skipStreak>=1))return false;
+  if(e.id===24){const raw=rawNextTeam();if(target.id!==raw)return false;if(G.lastSkipTarget===target.id)return false}
+  if([14,16].includes(e.id)){const min=Math.min(...G.teams.map(x=>x.score));if(target.score===min&&owner.score-target.score>=250)return false}
+  const kind={12:"lock",13:"c50",15:"noroll",17:"noatk",18:"cut",19:"swap",20:"inter"}[e.id];
+  if(kind&&target.negativePending?.kind===kind)return false;
+  return true;
+}
+function validTargets(owner,eid){const e=EVENT_BY_ID.get(eid);return G.teams.filter(t=>attackTargetValid(owner,e,t))}
+function nextTargetPreviewForSkip(owner){const raw=rawNextTeam();return teamById(raw)}
+function eventAvailableForDraw(owner,e){if(e.group===1||e.id===24)return validTargets(owner,e.id).length>0;return true}
+function stageWeights(){return [[3,.7,1,1.2,.5],[1.5,1.2,2,1,1],[1,1.3,1.3,1.5,1],[1,1,1,1,1.5]][stageIndex()]}
+function rarityWeights(){return [{C:1,R:.25,L:0},{C:1,R:.5,L:.1},{C:1,R:.8,L:.3},{C:1,R:1.2,L:1.2}][stageIndex()]}
+function weightedEventPick(list){
+  if(!list.length)return null;
+  const GW=stageWeights(),RW=rarityWeights(),weight=e=>GW[e.group]*RW[e.rarity];
+  const total=list.reduce((s,e)=>s+weight(e),0);
+  if(total<=0)return list[(Math.random()*list.length)|0];
+  let r=Math.random()*total;
+  for(const e of list){r-=weight(e);if(r<0)return e}
+  return list[list.length-1];
+}
+function drawEvent(owner){
+  const remaining=EVENTS.filter(e=>!G.usedEventIds.includes(e.id));
+  if(!remaining.length)return null;
+  const candidate=weightedEventPick(remaining);if(!candidate)return null;
+  let pick=candidate;
+  if(!eventAvailableForDraw(owner,candidate)){
+    const sameRarity=remaining.filter(e=>e.rarity===candidate.rarity&&eventAvailableForDraw(owner,e));
+    const commons=remaining.filter(e=>e.rarity==="C"&&eventAvailableForDraw(owner,e));
+    const any=remaining.filter(e=>eventAvailableForDraw(owner,e));
+    pick=weightedEventPick(sameRarity)||weightedEventPick(commons)||weightedEventPick(any);
+    if(!pick)return null;
+  }
+  G.usedEventIds.push(pick.id);G.eventCount++;owner.eventsReceived++;return pick.id;
+}
+function rollEvent(){
+  if(G.questionIndex>=23||G.eventCount>=18){finalizeTurnAndAdvance();return}
+  setPhase("EVENT_ROLL");
+  const t=currentTeam();
+  if(t.negativePending?.kind==="noroll"){
+    t.negativePending=null;G.eventRollOutcome="noroll";saveState();
+    openModal(`<h3>Khóa Đường Ray</h3><p>${esc(t.name)} không nhận Event ở lần roll này.</p>`,[["Tiếp tục",()=>finalizeTurnAndAdvance()]]);return
+  }
+  if(Math.random()>=.70){G.eventRollOutcome="none";saveState();
+    openModal(`<h3>Roll Event</h3><p>Không có Event lần này.</p>`,[["Tiếp tục",()=>finalizeTurnAndAdvance()]]);return
+  }
+  const id=drawEvent(t);
+  if(!id){G.eventRollOutcome="none";saveState();openModal(`<h3>Roll Event</h3><p>Không có Event hợp lệ ở trạng thái hiện tại.</p>`,[["Tiếp tục",()=>finalizeTurnAndAdvance()]]);return}
+  G.eventRollOutcome="event";G.pendingEventId=id;saveState();revealEvent(id);
+}
+function eventHTML(owner,id){const e=EVENT_BY_ID.get(id);return `<div class="event-card ${e.rarity}"><div class="rarity">${RARITY_NAME[e.rarity]} · ${EVENT_GROUPS[e.group].toUpperCase()}</div><h2>${esc(e.name)}</h2><p>${esc(e.desc)}</p><small>Chủ sở hữu: ${esc(owner.name)}</small></div>`}
+function revealEvent(id){setPhase("EVENT_REVEAL");const t=currentTeam(),reason=canUseEvent(t,id),defense=DEFENSE_IDS.has(id);playTone(EVENT_BY_ID.get(id).rarity==="L"?"legend":"event");const actions=[];
+  if(!defense)actions.push(["Kích hoạt",()=>useDrawnEvent(id),!!reason]);
+  if(t.hand.length<3)actions.push([defense?"Giữ lại (Defense)":"Giữ lại",()=>{t.hand.push(id);G.pendingEventId=null;saveState();finalizeTurnAndAdvance()}]);
+  else{actions.push(["Bỏ lá mới",()=>{G.pendingEventId=null;saveState();finalizeTurnAndAdvance()}]);t.hand.forEach((h,k)=>actions.push([`Bỏ “${esc(EVENT_BY_ID.get(h).name)}” & giữ lá mới`,()=>{t.hand.splice(k,1);t.hand.push(id);G.pendingEventId=null;saveState();finalizeTurnAndAdvance()}]));}
+  const extra=(reason?`<div class="note"><b>Chưa dùng được:</b> ${esc(reason)}</div>`:"")+(defense?`<div class="note"><b>Defense:</b> lá này chỉ phản ứng khi đội bị tấn công.</div>`:"")+(t.hand.length>=3?'<div class="note"><b>Tay đầy 3/3:</b> phải chọn một cách xử lý lá mới.</div>':"");
+  openModal(eventHTML(t,id)+extra,actions);
+}
+function canUseEvent(t,id){
+  const e=EVENT_BY_ID.get(id);if(!e)return "Event không tồn tại";
+  if(DEFENSE_IDS.has(id))return "Defense chỉ kích hoạt khi bị tấn công";
+  if(ATTACK_IDS.has(id)){if(t.negativePending?.kind==="noatk")return "Đang bị Độc Quyền: không dùng Attack ở lượt này";if(!validTargets(t,id).length)return "Không có mục tiêu hợp lệ"}
+  if(id===21){
+    if(G.lockOrderTurns>0){
+      if(G.deferredReverse)return "Đã có Reverse đang chờ hết Khóa Thứ Tự";
+      return "";
+    }
+    if(turnModifierBusy())return "Đang có thay đổi thứ tự lượt khác hoạt động";
+  }
+  if([22,23,26,28].includes(id)&&(G.lockOrderTurns>0||turnModifierBusy()))return "Đang có thay đổi thứ tự lượt khác hoạt động";
+  if(id===27&&(G.lockOrderTurns>0||turnModifierBusy()))return "Chưa thể đặt Khóa Thứ Tự khi đang có modifier lượt";
+  if(id===24 && !validTargets(t,24).length)return "Đội kế tiếp không phải mục tiêu hợp lệ";
+  if(id===25&&(G.questionIndex>=23))return "Câu 24 là câu cuối: không có Extra Turn sau ván";
+  if(id===25&&(G.extraRequested||G.consecutiveTurns>=2))return "Đã chạm giới hạn 2 lượt liên tiếp";
+  if(id===25&&G.lockOrderTurns>0)return "Khóa Thứ Tự đang ngăn thay đổi thứ tự lượt";
+  if(id===25&&turnModifierBusy())return "Đang có thay đổi thứ tự lượt khác hoạt động";
+  if(id===36){const s=G.teams.map(x=>x.score);const mx=Math.max(...s),mn=Math.min(...s);if(mx===mn)return "Chưa có chênh lệch điểm";if(G.teams.filter(x=>x.score===mx).length!==1||G.teams.filter(x=>x.score===mn).length!==1)return "Đang hòa nhóm cao/thấp, chưa xác định được 2 đội"}
+  if(id===29&&t.armed.filter(x=>x===29).length>=2)return "Đã đủ 2 Khiên";
+  if([30,31,32,33,34].includes(id)&&t.armed.includes(id))return "Lá này đã được kích hoạt";
+  return "";
+}
+function removeFromHand(t,id){const i=t.hand.indexOf(id);if(i>=0)t.hand.splice(i,1)}
+function useHeld(index){if(G.phase!=="QUESTION")return;const t=currentTeam(),id=t.hand[index];if(!id)return;const reason=canUseEvent(t,id);if(reason)return;useEvent(t,id,()=>{removeFromHand(t,id);t.eventsUsed++;saveState();renderQuestion()},"hand")}
+function selectTargetModal(title,targets,onPick,onCancel){
+  openModal(`<h3>${esc(title)}</h3><div class="modal-actions">${targets.map(t=>`<button data-target-id="${t.id}">${esc(t.name)} · ${t.score} điểm</button>`).join("")}</div>${onCancel?'<div class="bottom-actions"><button class="ghost" data-target-cancel>Hủy</button></div>':''}`,[],false);
+  modalState={kind:"target",targets,onPick,onCancel};
+  $("#modalRoot").querySelectorAll("[data-target-id]").forEach(btn=>btn.addEventListener("click",()=>withAction(()=>{const id=+btn.dataset.targetId;const target=teamById(id);if(!target)return;const state=modalState;closeModal();state?.onPick?.(target)})));
+  const cancel=$("#modalRoot [data-target-cancel]");
+  if(cancel)cancel.addEventListener("click",()=>withAction(()=>{const state=modalState;closeModal();state?.onCancel?.()}));
+}
+function useDrawnEvent(id){const t=currentTeam();const reason=canUseEvent(t,id);if(reason)return;if(useEvent(t,id,()=>{G.pendingEventId=null;t.eventsUsed++;saveState();finalizeTurnAndAdvance()},"drawn"))closeModal()}
+function useEvent(t,id,onSuccess,source="direct"){const e=EVENT_BY_ID.get(id);const others=otherTeams();const finish=()=>{if(id!==24)G.lastSkipTarget=-1;if(!ATTACK_IDS.has(id))G.lastAttack={owner:-1,target:-1};onSuccess&&onSuccess()};
+  switch(id){
+    case 1:addPoints(t,100);finish();return true;
+    case 2:setPositive(t,150,"bonus");finish();return true;
+    case 3:addPoints(t,75);finish();return true;
+    case 4:addPoints(t,100);if(t.armed.filter(x=>x===29).length<2)t.armed.push(29);finish();return true;
+    case 5:setPositive(t,125,"bonus");finish();return true;
+    case 6:openModal(`<h3>Chia Sẻ Lợi Tức</h3><p>Chọn 1 đội khác để cả hai cùng nhận +50.</p>`,others.map(x=>[esc(x.name),()=>{addPoints(t,50);addPoints(x,50);finish();closeModal()}]));return false;
+    case 7:addPoints(t,125);finish();return true;
+    case 8:clearNegative(t);addPoints(t,50);finish();return true;
+    case 9:setPositive(t,200,"bonus");finish();return true;
+    case 10:setPositive(t,50,"bonus");finish();return true;
+    case 21:if(G.lockOrderTurns>0){G.deferredReverse=true;say("Reverse đã được lưu, chờ Khóa Thứ Tự kết thúc.")}else{G.direction*=-1;say(`Đảo hướng vòng chơi: ${G.direction===1?"thuận":"ngược"}`)};finish();return true;
+    case 22:selectTargetModal("Chọn đội kế tiếp",others,x=>{G.forcedNext=x.id;G.forcedFollowNext=normalNextFrom(t.id);G.turnModifierNote=`Đổi Lượt → ${x.name}`;finish()},()=>{source==="drawn"?revealEvent(id):renderQuestion()});return false;
+    case 23:selectTargetModal("Chọn đối thủ chơi ngay sau lượt này",others,x=>{G.forcedNext=x.id;G.forcedFollowNext=normalNextFrom(t.id);G.turnModifierNote=`Joker Lượt → ${x.name}`;finish()},()=>{source==="drawn"?revealEvent(id):renderQuestion()});return false;
+    case 24:{const tg=nextTargetPreviewForSkip(t);return tg?attack(t,24,tg,finish,source):false}
+    case 25:G.extraRequested=true;finish();return true;
+    case 26:{const next=teamById((t.id-G.direction+3)%3);if(next){G.forcedNext=next.id;G.forcedFollowNext=normalNextFrom(t.id)}finish();return true}
+    case 27:G.lockOrderTurns=2;G.lockStartQuestion=G.questionIndex;G.lockLastConsumedQuestion=G.questionIndex;finish();return true;
+    case 28:{let p;do p=shuffle([0,1,2]);while(p[0]===t.id);G.turnPlan=p;finish();return true}
+    case 29:case 30:case 31:case 32:case 33:case 34:t.armed.push(id);finish();return true;
+    case 35:t.positivePending=null;addPoints(t,100);finish();return true;
+    case 36:{const mx=Math.max(...G.teams.map(x=>x.score)),mn=Math.min(...G.teams.map(x=>x.score));const high=G.teams.find(x=>x.score===mx),low=G.teams.find(x=>x.score===mn);if(high&&low)transferPoints(high,low,50);finish();return true}
+    case 37:G.teams.forEach(x=>deductPoints(x,50));finish();return true;
+    case 38:setPositive(t,200,"bonus");finish();return true;
+    case 39:clearNegative(t);addPoints(t,100);finish();return true;
+    case 40:openModal(`<h3>Đường Tàu Cuối Cùng</h3><p>Chọn cách nhận điểm.</p>`,[["+250 ngay",()=>{addPoints(t,250);finish();closeModal()}],["+350 nếu câu kế tiếp đúng",()=>{setPositive(t,350,"bonus");finish();closeModal()}]]);return false;
+    default:{const targets=validTargets(t,id);selectTargetModal(`Chọn mục tiêu · ${esc(e.name)}`,targets,x=>attack(t,id,x,finish,source),()=>{source==="drawn"?revealEvent(id):renderQuestion()});return false}
+  }
+}
+
+function defenseOptions(target,attackId){return [
+  ...target.armed.filter(id=>[29,30,32,33,34].includes(id)&&defenseMatches(id,attackId)).map(id=>({id,where:"armed"})),
+  ...target.hand.filter(id=>[29,30,32,33,34].includes(id)&&defenseMatches(id,attackId)).map(id=>({id,where:"hand"}))
+]}
+function defenseMatches(id,attackId){if(id===29)return ATTACK_IDS.has(attackId);if(id===30)return [11,24].includes(attackId);if(id===32)return ATTACK_IDS.has(attackId);if(id===33)return ATTACK_IDS.has(attackId);if(id===34)return [11,24].includes(attackId);return false}
+function consumeDefense(target,option){if(option.where==="armed")target.armed.splice(target.armed.indexOf(option.id),1);else target.hand.splice(target.hand.indexOf(option.id),1)}
+function presentDefense(owner,id,target,finish){
+  const e=EVENT_BY_ID.get(id);
+  const apply=option=>{G.pendingAttack=null;if(option){consumeDefense(target,option);if(option.where==="hand")target.eventsUsed++;target.blocked++;target.eventsBlocked++;say(`${target.name} chặn bằng ${EVENT_BY_ID.get(option.id).name}.`);playTone("event");if(option.id===32)deductPoints(owner,50);saveState();finish();return}
+    switch(id){case 11:target.skipPending=true;break;case 12:setNegative(target,"lock",owner.id);break;case 13:setNegative(target,"c50",owner.id);break;case 14:transferPoints(target,owner,50);break;case 15:setNegative(target,"noroll",owner.id);break;case 16:deductPoints(target,75);break;case 17:setNegative(target,"noatk",owner.id);break;case 18:setNegative(target,"cut",owner.id);break;case 19:setNegative(target,"swap",owner.id);break;case 20:setNegative(target,"inter",owner.id);break;case 24:target.skipPending=true;G.lastSkipTarget=target.id;break}
+    saveState();finish();
+  };
+  const defs=defenseOptions(target,id);
+  if(!defs.length){apply(null);return true}
+  openModal(`<h3>${esc(target.name)} bị nhắm bởi ${esc(e.name)}</h3><p>Đây là thời điểm cuối cùng để dùng Defense trước khi hiệu ứng được commit.</p>`,[...defs.map(o=>[`Dùng ${EVENT_BY_ID.get(o.id).name}`,()=>{closeModal();apply(o)}]),["Không dùng",()=>{closeModal();apply(null)}]]);
+  return false;
+}
+function attack(owner,id,target,finish,source="direct"){
+  const e=EVENT_BY_ID.get(id);G.lastAttack={owner:owner.id,target:target.id};if(id===24)G.lastSkipTarget=target.id;target.attacks++;say(`Event – ${e.name}: ${owner.name} → ${target.name}`);G.pendingAttack={owner:owner.id,target:target.id,event:id,source};setPhase("DEFENSE");return presentDefense(owner,id,target,finish);
+}
+function resumePendingDefense(){
+  const p=G.pendingAttack;if(!p)return false;const owner=teamById(p.owner),target=teamById(p.target);if(!owner||!target){G.pendingAttack=null;G.pendingEventId=null;saveState();return false}
+  const finish=()=>{if(p.source==="hand"){removeFromHand(owner,p.event);owner.eventsUsed++;saveState();G.currentTeam=owner.id;renderQuestion()}else if(p.source==="drawn"){G.pendingEventId=null;owner.eventsUsed++;saveState();finalizeTurnAndAdvance()}else{saveState()}};
+  return presentDefense(owner,p.event,target,finish);
+}
+
+function finalizeTurnAndAdvance(){closeModal();const finished=currentTeam();if(finished.negativePending?.kind==="noatk")finished.negativePending=null;G.pendingEventId=null;G.eventRollOutcome=null;consumeOrderLock();saveState();if(G.questionIndex>=23){finishCheck();return}chooseNextTeam()}
+function finishCheck(){
+  closeModal();setPhase("FINAL");const mx=Math.max(...G.teams.map(t=>t.score));G.tieTeams=G.teams.filter(t=>t.score===mx).map(t=>t.id);
+  if(G.tieTeams.length>1){G.tieBreakIndex=0;G.tieBreakWinner=null;G.tieBreakResolvedByCorrect=false;G.teams.forEach(t=>t.tieBreakWinner=false);setPhase("TIEBREAK");renderTieBreak();return}
+  G.tieBreakWinner=null;G.tieBreakResolvedByCorrect=false;G.tieTeams=[];G.teams.forEach(t=>t.tieBreakWinner=false);
+  finalScreen();
+}
+function renderTieBreak(){const tb=TB[G.tieBreakIndex];scr(`<div class="card"><div class="stage-kicker">TIE-BREAK ${G.tieBreakIndex+1}/3</div><h2>Các đội hòa cao nhất</h2><p><b>${G.tieTeams.map(id=>esc(teamById(id).name)).join(", ")}</b></p><div class="note">Người điều khiển đọc câu; các đội ghi/giơ đáp án đồng thời. Câu tie-break không cộng điểm vào 24 câu chính.</div><h2>${esc(tb[0])}</h2><button data-action="reveal-tb">Hiện đáp án</button><div class="note hidden" id="tbAnswer"><b>${esc(tb[1])}</b></div><div style="margin-top:14px"><b>Đội trả lời đúng:</b>${G.tieTeams.map(id=>`<label class="check"><input type="checkbox" class="tbx" value="${id}"> ${esc(teamById(id).name)}</label>`).join("")}</div><div class="bottom-actions"><button class="pri" data-action="submit-tb">Xác nhận</button></div></div>`)}
+function submitTieBreak(){
+  const correct=[...document.querySelectorAll(".tbx:checked")].map(x=>+x.value).filter(id=>G.tieTeams.includes(id));
+  if(correct.length===1){G.tieBreakWinner=correct[0];G.tieBreakResolvedByCorrect=false;G.teams.forEach(t=>t.tieBreakWinner=t.id===G.tieBreakWinner);saveState();finalScreen();return}
+  if(G.tieBreakIndex<2){G.tieBreakIndex++;saveState();renderTieBreak();return}
+  const tied=G.tieTeams.map(id=>teamById(id)).filter(Boolean);const maxCorrect=Math.max(...tied.map(t=>t.correct));const byCorrect=tied.filter(t=>t.correct===maxCorrect);
+  G.tieBreakResolvedByCorrect=true;G.tieBreakWinner=byCorrect.length===1?byCorrect[0].id:null;G.teams.forEach(t=>t.tieBreakWinner=t.id===G.tieBreakWinner);
+  saveState();finalScreen();
+}
+function finalWinnerTeams(){
+  if(G.tieBreakWinner!==null){const w=teamById(G.tieBreakWinner);return w?[w]:[]}
+  const topScore=Math.max(...G.teams.map(t=>t.score));const top=G.teams.filter(t=>t.score===topScore);
+  if(G.tieBreakResolvedByCorrect&&G.tieTeams.length>1){const m=Math.max(...G.tieTeams.map(id=>teamById(id)?.correct||0));return top.filter(t=>t.correct===m)}
+  return top;
+}
+function finalScreen(){closeModal();setPhase("FINAL");const ranked=rankedTeams();const winners=finalWinnerTeams();spawnConfetti();playTone("finish");scr(`<div class="card"><div class="center"><div class="stage-kicker">TÀU ĐÃ VỀ GA CUỐI</div><h1>${winners.length===1?`🏆 ${esc(winners[0].name)}`: `Đồng hạng nhất: ${winners.map(t=>esc(t.name)).join(" & ")}`}</h1><p>Đã đi qua đủ 4 chặng · Event đã phát: ${G.eventCount}</p></div><div class="final-grid">${G.teams.map(t=>`<div class="final-stat"><span>${esc(t.name)}</span><b>${t.score}</b><span>${t.correct} đúng · ${t.wrong} sai</span></div>`).join("")}</div><div style="overflow:auto"><table><tr><th>Hạng</th><th>Đội</th><th>Điểm</th><th>Đúng</th><th>Sai</th><th>Event nhận</th><th>Event dùng</th><th>Bị tấn công</th><th>Đã chặn</th><th>Bị bỏ lượt</th></tr>${ranked.map((t,i)=>`<tr><td>${rankingNumber(ranked,i)}</td><td style="color:${TEAM_COLORS[t.id]};font-weight:900">${esc(t.name)}</td><td><b>${t.score}</b></td><td>${t.correct}</td><td>${t.wrong}</td><td>${t.eventsReceived}</td><td>${t.eventsUsed}</td><td>${t.attacks}</td><td>${t.blocked}</td><td>${t.skipped}</td></tr>`).join("")}</table></div><div class="bottom-actions"><button class="pri" data-action="new">Chơi ván mới</button><button data-action="home">Về trang chủ</button></div></div>`);localStorage.removeItem(APP_KEY);G._finalPersisted=false}
+function rankingNumber(arr,i){
+  if(i===0)return 1;
+  const a=arr[i],b=arr[i-1];
+  if(a.score!==b.score)return i+1;
+  if(G.tieBreakWinner!==null){if(a.id===G.tieBreakWinner)return 1;if(b.id===G.tieBreakWinner)return i+1;}
+  if(G.tieBreakResolvedByCorrect&&a.correct!==b.correct)return i+1;
+  return rankingNumber(arr,i-1);
+}
+
+function openModal(html,buttons,withDefault=true){const root=$("#modalRoot");modalState=modalState||{};root.innerHTML=`<div class="modal" role="dialog" aria-modal="true">${html}<div class="modal-actions">${buttons.map((b,i)=>`<button data-modal-index="${i}" ${b[2]?"disabled":""}>${b[0]}</button>`).join("")}</div></div>`;root.classList.add("on");buttons.forEach((b,i)=>root.querySelector(`[data-modal-index="${i}"]`)?.addEventListener("click",()=>withAction(b[1])) )}
+function closeModal(){$("#modalRoot").classList.remove("on");$("#modalRoot").innerHTML="";modalState=null}
+
+function persist(){if(!G)return;try{const copy=JSON.parse(JSON.stringify(G));delete copy._finalPersisted;localStorage.setItem(APP_KEY,JSON.stringify(copy))}catch(_){}}
+function saveState(){persist();renderShell()}
+function loadSavedRaw(){try{const s=localStorage.getItem(APP_KEY);return s?JSON.parse(s):null}catch(_){return null}}
+function resumeGame(){
+  const raw=loadSavedRaw();if(!raw)return home();G=raw;
+  if(!Array.isArray(G.usedEventIds))G.usedEventIds=[];
+  if(!G.lastAttack)G.lastAttack={owner:-1,target:-1};
+  if(!Array.isArray(G.questionAttempts))G.questionAttempts=[];
+  if(!Array.isArray(G.attemptedTeams))G.attemptedTeams=G.questionAttempts.map(a=>a.teamId);
+  G.questionStartTeam=Number.isInteger(G.questionStartTeam)?G.questionStartTeam:G.currentTeam;
+  G.questionLastTeam=Number.isInteger(G.questionLastTeam)?G.questionLastTeam:null;
+  G.questionResolved=!!G.questionResolved;
+  G.renderedQuestionIndex=Number.isInteger(G.renderedQuestionIndex)?G.renderedQuestionIndex:(G.renderedOptions?.length===4?G.questionIndex:-1);G.forcedNext=G.forcedNext??null;G.forcedFollowNext=G.forcedFollowNext??null;G.extraRequested=!!G.extraRequested;G.tieBreakResolvedByCorrect=!!G.tieBreakResolvedByCorrect;G.teams.forEach(t=>{t.lastDeductionBlocked=!!t.lastDeductionBlocked;t.tieBreakWinner=!!t.tieBreakWinner});
+  if(G.phase==="EVENT_ROLL"){
+    if(G.eventRollOutcome==="event"&&G.pendingEventId){revealEvent(G.pendingEventId);return}
+    if(G.eventRollOutcome==="noroll"){openModal(`<h3>Khóa Đường Ray</h3><p>Đội này đã bị khóa Event ở lần roll vừa lưu.</p>`,[["Tiếp tục",()=>finalizeTurnAndAdvance()]]);return}
+    if(G.eventRollOutcome==="none"){openModal(`<h3>Roll Event</h3><p>Lần roll vừa lưu không có Event.</p>`,[["Tiếp tục",()=>finalizeTurnAndAdvance()]]);return}
+    finalizeTurnAndAdvance();return
+  }
+  if(G.phase==="EVENT_REVEAL"&&G.pendingEventId){if(!G.renderedOptions?.length)prepareQuestion();renderQuestion();revealEvent(G.pendingEventId);return}
+  if(G.phase==="DEFENSE"&&G.pendingAttack){renderQuestion();resumePendingDefense();return}
+  if(G.phase==="QUESTION"){if(!G.renderedOptions?.length)prepareQuestion();renderQuestion();return}
+  if(G.phase==="RESULT"){if(!G.renderedOptions?.length)prepareQuestion();renderResult();return}
+  if(G.phase==="TIEBREAK"){renderTieBreak();return}
+  if(G.phase==="FINAL"){finalScreen();return}
+  if(G.phase==="STAGE_INTRO"){stageIntro(G.stageShown||0);return}
+  home()
+}
+function clearSave(){localStorage.removeItem(APP_KEY);home()}
+function spawnConfetti(){const c=$("#confetti");c.innerHTML=Array.from({length:30},(_,i)=>`<i style="left:${(i*3.43)%100}%;background:${["#F4B942","#167C80","#E56B5D","#3B82F6"][i%4]};animation-delay:${(i%7)*.12}s"></i>`).join("");setTimeout(()=>c.innerHTML="",3600)}
+
+const ACTIONS={
+ mute(){mute=!mute;renderShell();playTone("click")},
+ setup(){setup()},
+ start(){const names=[0,1,2].map(i=>(document.querySelector(`#teamNm${i}`).value.trim()||DEFAULT_NAMES[i]).slice(0,20));newGame(names)},
+ go(){startQuestionForTeam(G.currentTeam)},
+ answer(index){answer(+index)},
+ after(){afterResult()},
+ held(index){useHeld(+index)},
+ resume(){resumeGame()},
+ "clear-save"(){clearSave()},
+ home(){home()},
+ new(){clearSave();setup()},
+ "reveal-tb"(){$("#tbAnswer")?.classList.remove("hidden")},
+ "submit-tb"(){submitTieBreak()}
+};
+
+document.addEventListener("click",e=>{const btn=e.target.closest("[data-action]");if(!btn||btn.disabled)return;const action=btn.dataset.action;const fn=ACTIONS[action];if(!fn)return;playTone("click");if(["answer","after","held","start","go","submit-tb"].includes(action))withAction(()=>fn(btn.dataset.index));else fn(btn.dataset.index)});
+
+// ===== Production QA helpers (only meaningful with ?qa=1) =====
+window.__TAU_QA={
+  getState:()=>JSON.parse(JSON.stringify(G)),
+  clear:()=>{localStorage.removeItem(APP_KEY);G=null;home()},
+  bootstrap:(names)=>newGame(names),
+  forcePhase:(p)=>{G.phase=p;saveState()},
+  canUse:(teamId,eventId)=>canUseEvent(teamById(teamId),eventId),
+  validTargets:(teamId,eventId)=>validTargets(teamById(teamId),eventId).map(t=>t.id),
+  setScores:(scores)=>scores.forEach((s,i)=>G.teams[i].score=s),
+  setCurrent:(id)=>{G.currentTeam=id;if(G.phase!=="QUESTION")G.phase="QUESTION";renderQuestion()},
+  setPendingNegative:(teamId,kind)=>{teamById(teamId).negativePending=kind?{kind,by:0}:null;},
+  setSkip:(teamId)=>teamById(teamId).skipPending=true,
+  setSkipStreak:(teamId,n)=>teamById(teamId).skipStreak=n,
+  setLastSkip:(id)=>G.lastSkipTarget=id,
+  setAttackLast:(owner,target)=>G.lastAttack={owner,target},
+  setLock:(n)=>{G.lockOrderTurns=n;G.lockStartQuestion=G.questionIndex-n;G.lockLastConsumedQuestion=G.questionIndex-n},
+  setForcedNext:(id)=>{G.forcedNext=id},
+  setPlan:(ids)=>{G.turnPlan=ids.slice()},
+  setExtra:(v)=>{G.extraRequested=v},
+  setConsecutive:(n)=>{G.consecutiveTurns=n},
+  advance:()=>chooseNextTeam(),
+  consumeLock:()=>consumeOrderLock(),
+  addHand:(teamId,eventId)=>teamById(teamId).hand.push(eventId),
+  deduct:(teamId,n)=>deductPoints(teamById(teamId),n),
+  useDirect:(teamId,eventId)=>useEvent(teamById(teamId),eventId,()=>{teamById(teamId).eventsUsed++;}),
+  answer:(index=0)=>answer(index),
+  render:()=>renderShell(),
+  positionBag:()=>G.positionBag.slice()
+};
+
+function boot(){
+  const saved=loadSavedRaw();
+  if(saved){home()}else home();
+}
+boot();
+</script>
+</body>
+</html>
